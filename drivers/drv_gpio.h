@@ -12,6 +12,9 @@
 
 #include "board.h"
 
+#define __SWM181_PORT(port)  (GPIO##port##_BASE)
+#define GET_PIN(PORTx,PIN)  ((int)(((int)__SWM181_PORT(PORTx) - (int)GPIOA_BASE) / (0x1000) * 16 + PIN))
+
 int rt_hw_pin_init(void);
 
 #endif

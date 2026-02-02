@@ -7,11 +7,17 @@
  * Date           Author       Notes
  */
 
+#include <rthw.h>
 #include <rtthread.h>
 #include <rtdevice.h>
+
+#include "board.h"
 #include "drv_gpio.h"
 
 #ifdef RT_USING_PIN
+
+#define SWM181_PIN_GET_PORT(pin)  ((GPIO_TypeDef *)(GPIOA_BASE + ((pin) >> 4) * 0x1000))
+#define SWM181_PIN_GET_PIN(pin)   ((pin) & 0x0F)
 
 static void swm181_pin_mode(struct rt_device *device, rt_base_t pin, rt_uint8_t mode)
 {
@@ -19,6 +25,9 @@ static void swm181_pin_mode(struct rt_device *device, rt_base_t pin, rt_uint8_t 
     int pull_up = 0;
     int pull_down = 0;
     int open_drain = 0;
+    
+    GPIO_TypeDef *gpio_port = SWM181_PIN_GET_PORT(pin);
+    uint32_t gpio_pin = SWM181_PIN_GET_PIN(pin);
 
     /* Configure GPIO_InitStructure */
     switch (mode)
@@ -48,24 +57,30 @@ static void swm181_pin_mode(struct rt_device *device, rt_base_t pin, rt_uint8_t 
         break;
     }
 
-    GPIO_Init(GPIOB, pin, dir, pull_up, pull_down, open_drain);
+    GPIO_Init(gpio_port, gpio_pin, dir, pull_up, pull_down, open_drain);
 }
 
 static void swm181_pin_write(struct rt_device *device, rt_base_t pin, rt_uint8_t value)
 {
+    GPIO_TypeDef *gpio_port = SWM181_PIN_GET_PORT(pin);
+    uint32_t gpio_pin = SWM181_PIN_GET_PIN(pin);
+
     if (value)
     {
-        GPIO_AtomicSetBit(GPIOB, pin);
+        GPIO_AtomicSetBit(gpio_port, gpio_pin);
     }
     else
     {
-        GPIO_AtomicClrBit(GPIOB, pin);
+        GPIO_AtomicClrBit(gpio_port, gpio_pin);
     }
 }
 
 static int swm181_pin_read(struct rt_device *device, rt_base_t pin)
 {
-    return (int)GPIO_GetBit(GPIOB, pin);
+    GPIO_TypeDef *gpio_port = SWM181_PIN_GET_PORT(pin);
+    uint32_t gpio_pin = SWM181_PIN_GET_PIN(pin);
+    
+    return (int)GPIO_GetBit(gpio_port, gpio_pin);
 }
 
 static rt_err_t swm181_pin_attach_irq(struct rt_device *device, rt_base_t pin,
