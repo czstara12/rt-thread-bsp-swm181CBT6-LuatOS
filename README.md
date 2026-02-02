@@ -29,7 +29,7 @@ export RTT_ROOT=[RTT仓库路径]
 
 通过阅读快速上手章节开发者可以快速地上手该 BSP，将 RT-Thread 运行在开发板上。
 
-![board](figures\board.png)
+![board](figures/board.png)
 
 ## 芯片介绍
 
