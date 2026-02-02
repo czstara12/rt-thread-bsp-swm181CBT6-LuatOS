@@ -3,9 +3,11 @@
 #include "rtthread.h"
 #include <rtdevice.h>
 #include <board.h>
+#include "drv_gpio.h"
 
-#define LED0_PIN 8
-#define LED1_PIN 9
+#define LED0_PIN GET_PIN(B, 8)
+#define LED1_PIN GET_PIN(B, 9)
+#define LED2_PIN GET_PIN(D, 0)
 
 void TaskADC(void *arg);
 void TaskPWM(void *arg);
@@ -54,10 +56,10 @@ void TaskADC(void *arg)
 }
 void TaskPWM(void *arg)
 {
-	GPIO_Init(GPIOD, PIN0, 1, 0, 0, 0); // 调试指示信号
+	rt_pin_mode(LED2_PIN, PIN_MODE_OUTPUT); // 调试指示信号
 	while (1)
 	{
-		GPIO_InvBit(GPIOD, PIN0);
+		rt_pin_write(LED2_PIN, !rt_pin_read(LED2_PIN));
 		rt_thread_delay(500);
 	}
 }
