@@ -131,6 +131,15 @@
 /* Wiced WiFi */
 
 
+/* CYW43012 WiFi */
+
+
+/* BL808 WiFi */
+
+
+/* CYW43439 WiFi */
+
+
 /* IoT Cloud */
 
 
@@ -172,13 +181,45 @@
 
 /* peripheral libraries and drivers */
 
+/* HAL & SDK Drivers */
+
+/* STM32 HAL & SDK Drivers */
+
+
+/* Infineon HAL Packages */
+
+
+/* Kendryte SDK */
+
+
+/* WCH HAL & SDK Drivers */
+
+
+/* AT32 HAL & SDK Drivers */
+
+
+/* HC32 DDL Drivers */
+
+
+/* NXP HAL & SDK Drivers */
+
+
+/* NUVOTON Drivers */
+
+
+/* GD32 Drivers */
+
+
+/* HPMicro SDK */
+
+
+/* FT32 HAL & SDK Drivers */
+
+
 /* sensors drivers */
 
 
 /* touch drivers */
-
-
-/* Kendryte SDK */
 
 
 /* AI packages */

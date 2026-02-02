@@ -9,9 +9,18 @@
 ```sh
 # 快速开始
 git clone -b v5.1.0 https://github.com/RT-Thread/rt-thread.git
-cd rt-thread/bsp/synwit
-git clone https://github.com/czstara12/rt-thread-bsp-swm181CBT6-LuatOS.git
-scons
+git clone https://github.com/czstara12/rt-thread-bsp-swm181CBT6-LuatOS.git rt-thread/bsp/synwit/swm181CBT6-LuatOS
+cd bsp/synwit/swm181CBT6-LuatOS
+scons --target=mdk5
+# 或者scons
+```
+
+不能编译请添加环境变量
+
+```sh
+export RTT_EXEC_PATH=[GCC路径]
+export RTT_CC=gcc
+export RTT_ROOT=[RTT仓库路径]
 ```
 
 ## 简介
@@ -163,3 +172,7 @@ msh />
 * [RT-Thread 文档中心](https://www.rt-thread.org/document/site/)
 * [SWM181数据手册](https://www.synwit.cn/uploads/soft/20220722/1-220H21TRIJ.pdf)
 * [LuatOSwiki](https://wiki.luatos.com/chips/swm181/index.html)
+
+# TODO
+
+1. 完成对所有外设的支持
