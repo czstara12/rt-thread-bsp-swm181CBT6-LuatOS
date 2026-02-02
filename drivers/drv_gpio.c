@@ -13,7 +13,7 @@
 
 #ifdef RT_USING_PIN
 
-static void swm181_pin_mode(struct rt_device *device, rt_base_t pin, rt_base_t mode)
+static void swm181_pin_mode(struct rt_device *device, rt_base_t pin, rt_uint8_t mode)
 {
     int dir = 0;
     int pull_up = 0;
@@ -51,7 +51,7 @@ static void swm181_pin_mode(struct rt_device *device, rt_base_t pin, rt_base_t m
     GPIO_Init(GPIOB, pin, dir, pull_up, pull_down, open_drain);
 }
 
-static void swm181_pin_write(struct rt_device *device, rt_base_t pin, rt_base_t value)
+static void swm181_pin_write(struct rt_device *device, rt_base_t pin, rt_uint8_t value)
 {
     if (value)
     {
@@ -68,8 +68,8 @@ static int swm181_pin_read(struct rt_device *device, rt_base_t pin)
     return (int)GPIO_GetBit(GPIOB, pin);
 }
 
-static rt_err_t swm181_pin_attach_irq(struct rt_device *device, rt_int32_t pin,
-                                      rt_uint32_t mode, void (*hdr)(void *args), void *args)
+static rt_err_t swm181_pin_attach_irq(struct rt_device *device, rt_base_t pin,
+                                      rt_uint8_t mode, void (*hdr)(void *args), void *args)
 {
     rt_err_t ret = RT_EOK;
 
@@ -78,7 +78,7 @@ static rt_err_t swm181_pin_attach_irq(struct rt_device *device, rt_int32_t pin,
     return ret;
 }
 
-static rt_err_t swm181_pin_detach_irq(struct rt_device *device, rt_int32_t pin)
+static rt_err_t swm181_pin_detach_irq(struct rt_device *device, rt_base_t pin)
 {
     rt_err_t ret = RT_EOK;
 
@@ -87,7 +87,7 @@ static rt_err_t swm181_pin_detach_irq(struct rt_device *device, rt_int32_t pin)
     return ret;
 }
 
-static rt_err_t swm181_pin_irq_enable(struct rt_device *device, rt_base_t pin, rt_uint32_t enabled)
+static rt_err_t swm181_pin_irq_enable(struct rt_device *device, rt_base_t pin, rt_uint8_t enabled)
 {
     rt_err_t ret = RT_EOK;
 

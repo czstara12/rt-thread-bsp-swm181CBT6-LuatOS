@@ -44,14 +44,10 @@ void IRQ0_Handler(void)
 static rt_err_t swm181_uart_configure(struct rt_serial_device *serial, struct serial_configure *cfg)
 {
     rt_err_t ret = RT_EOK;
-    struct swm181_uart_dev *uart;
 
     RT_ASSERT(serial != RT_NULL);
 
     serial->config = *cfg;
-
-    uart = swm181_UART_DEVICE(serial->parent.user_data);
-    RT_ASSERT(uart != RT_NULL);
 
     /* Init UART Hardware(uart->uart_periph) */
     UART_InitStructure UART_initStruct;
@@ -112,9 +108,6 @@ static rt_err_t swm181_uart_configure(struct rt_serial_device *serial, struct se
 static rt_err_t swm181_uart_control(struct rt_serial_device *serial, int cmd, void *arg)
 {
     rt_err_t ret = RT_EOK;
-    struct swm181_uart_dev *uart = swm181_UART_DEVICE(serial->parent.user_data);
-
-    RT_ASSERT(uart != RT_NULL);
 
     rt_ubase_t ctrl_arg = (rt_ubase_t)arg;
 
@@ -144,10 +137,6 @@ static rt_err_t swm181_uart_control(struct rt_serial_device *serial, int cmd, vo
 
 static int swm181_uart_putc(struct rt_serial_device *serial, char c)
 {
-    struct swm181_uart_dev *uart = swm181_UART_DEVICE(serial->parent.user_data);
-
-    RT_ASSERT(uart != RT_NULL);
-
     /* FIFO status, contain valid data */
     while (UART_IsTXFIFOFull(UART0) == 1)
         ;
@@ -159,29 +148,23 @@ static int swm181_uart_putc(struct rt_serial_device *serial, char c)
 static int swm181_uart_getc(struct rt_serial_device *serial)
 {
     int ch;
-    struct swm181_uart_dev *uart = swm181_UART_DEVICE(serial->parent.user_data);
-
-    RT_ASSERT(uart != RT_NULL);
 
     ch = -1;
 
     if (UART_IsRXFIFOEmpty(UART0) == 0)
     {
-        if (UART_ReadByte(UART0, &ch) != 0)
+        uint32_t data;
+        if (UART_ReadByte(UART0, &data) == 0)
         {
-            ch = 0;
+            ch = (int)data;
         }
     }
 
     return ch;
 }
 
-static rt_size_t swm181_uart_dma_transmit(struct rt_serial_device *serial, rt_uint8_t *buf, rt_size_t size, int direction)
+static rt_ssize_t swm181_uart_dma_transmit(struct rt_serial_device *serial, rt_uint8_t *buf, rt_size_t size, int direction)
 {
-    struct swm181_uart_dev *uart = swm181_UART_DEVICE(serial->parent.user_data);
-
-    RT_ASSERT(uart != RT_NULL);
-
     return 0;
 }
 
