@@ -14,7 +14,7 @@
 #include <rtthread.h>
 #include "SWM181.h"
 
-#define BOARD_SRAM_SIZE 0x8000
+#define BOARD_SRAM_SIZE 0x4000
 #define BOARD_SRAM_END (void *)(0x20000000 + BOARD_SRAM_SIZE)
 
 #ifdef __CC_ARM

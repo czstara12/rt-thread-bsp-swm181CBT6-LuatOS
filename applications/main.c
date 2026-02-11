@@ -46,8 +46,17 @@ int main(void)
 void TaskADC(void *arg)
 {
 	rt_pin_mode(LED1_PIN, PIN_MODE_OUTPUT);
+	rt_adc_device_t adc_dev = (rt_adc_device_t)rt_device_find("adc0");
+	if (adc_dev)
+	{
+		rt_adc_enable(adc_dev, 0);
+	}
 	while (1)
 	{
+		if (adc_dev)
+		{
+			(void)rt_adc_read(adc_dev, 0);
+		}
 		rt_pin_write(LED1_PIN, PIN_HIGH);
 		rt_thread_delay(300);
 		rt_pin_write(LED1_PIN, PIN_LOW);
@@ -56,7 +65,13 @@ void TaskADC(void *arg)
 }
 void TaskPWM(void *arg)
 {
-	rt_pin_mode(LED2_PIN, PIN_MODE_OUTPUT); // µ÷ÊÔÖ¸Ê¾ÐÅºÅ
+	rt_pin_mode(LED2_PIN, PIN_MODE_OUTPUT); // ï¿½ï¿½ï¿½ï¿½Ö¸Ê¾ï¿½Åºï¿½
+	struct rt_device_pwm *pwm_dev = (struct rt_device_pwm *)rt_device_find("pwm0");
+	if (pwm_dev)
+	{
+		rt_pwm_set(pwm_dev, 0, 1000000, 500000);
+		rt_pwm_enable(pwm_dev, 0);
+	}
 	while (1)
 	{
 		rt_pin_write(LED2_PIN, !rt_pin_read(LED2_PIN));

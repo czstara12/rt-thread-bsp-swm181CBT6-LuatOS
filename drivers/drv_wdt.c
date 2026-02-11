@@ -9,17 +9,20 @@
 
 #include <rtdevice.h>
 #include <rtthread.h>
+#include <board.h>
 #include "drv_wdt.h"
 
 #ifdef RT_USING_WDT
 
 static struct rt_watchdog_device wdt_dev;
+static rt_uint32_t wdt_timeout_sec = 5;
 
 static rt_err_t skt_wdt_init(rt_watchdog_t *wdt)
 {
     rt_err_t ret = RT_EOK;
 
-    /* Todo: init watchdog */
+    RT_UNUSED(wdt);
+    WDT_Init(WDT, (rt_uint32_t)((rt_uint64_t)SystemCoreClock * (rt_uint64_t)wdt_timeout_sec * 2ULL), WDT_MODE_RESET);
     return ret;
 }
 
@@ -27,27 +30,40 @@ static rt_err_t skt_wdt_control(rt_watchdog_t *wdt, int cmd, void *arg)
 {
     rt_err_t ret = RT_EOK;
 
+    RT_UNUSED(wdt);
     switch (cmd)
     {
+    case RT_DEVICE_CTRL_WDT_GET_TIMEOUT:
+        if (arg)
+        {
+            *(rt_uint32_t *)arg = wdt_timeout_sec;
+        }
+        break;
     case RT_DEVICE_CTRL_WDT_SET_TIMEOUT:
 
-        /* Todo:set wdt timeout value */
+        if (arg == RT_NULL)
+        {
+            return -RT_EINVAL;
+        }
+        wdt_timeout_sec = *(rt_uint32_t *)arg;
+        WDT_Init(WDT, (rt_uint32_t)((rt_uint64_t)SystemCoreClock * (rt_uint64_t)wdt_timeout_sec * 2ULL), WDT_MODE_RESET);
         break;
     case RT_DEVICE_CTRL_WDT_START:
 
-        /* Todo:enable wdt */
+        WDT_Start(WDT);
         break;
     case RT_DEVICE_CTRL_WDT_STOP:
 
-        /* Todo:stop wdt */
+        WDT_Stop(WDT);
         break;
 
     case RT_DEVICE_CTRL_WDT_KEEPALIVE:
 
-        /* Todo:refresh wdt */
+        WDT_Feed(WDT);
         break;
     default:
 
+        ret = -RT_EINVAL;
         break;
     }
 

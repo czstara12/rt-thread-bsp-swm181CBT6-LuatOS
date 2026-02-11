@@ -2,10 +2,10 @@
 MEMORY
 {
     CODE (rx) : ORIGIN = 0x00000000, LENGTH = 120k /* 120KB flash */
-    DATA (rw) : ORIGIN = 0x20000000, LENGTH =  16k /* 128K sram */
+    DATA (rw) : ORIGIN = 0x20000000, LENGTH =  16k /* 16KB sram */
 }
 ENTRY(Reset_Handler)
-_system_stack_size = 0x200;
+_system_stack_size = 0x800;
 
 SECTIONS
 {
@@ -50,8 +50,6 @@ SECTIONS
     .ARM.exidx :
     {
         *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-
-        /* This is used by the startup in order to initialize the .data secion */
         _sidata = .;
     } > CODE
     __exidx_end = .;
@@ -73,13 +71,6 @@ SECTIONS
         _edata = . ;
     } >DATA
 
-    .stack :
-    {
-        . = . + _system_stack_size;
-        . = ALIGN(4);
-        _estack = .;
-    } >DATA
-
     __bss_start = .;
     .bss :
     {
@@ -99,6 +90,23 @@ SECTIONS
     } > DATA
     __bss_end = .;
 
+    .heap (NOLOAD) :
+    {
+        . = ALIGN(8);
+        KEEP(*(.heap))
+        . = ALIGN(8);
+    } > DATA
+
+    ASSERT(. <= (ORIGIN(DATA) + LENGTH(DATA) - _system_stack_size), "region DATA overflowed with stack")
+
+    .stack ORIGIN(DATA) + LENGTH(DATA) - _system_stack_size (NOLOAD) :
+    {
+        . = ALIGN(8);
+        KEEP(*(.stack))
+        . = ALIGN(8);
+    } > DATA
+
+    _estack = ORIGIN(DATA) + LENGTH(DATA);
     _end = .;
 
     /* Stabs debugging sections.  */
