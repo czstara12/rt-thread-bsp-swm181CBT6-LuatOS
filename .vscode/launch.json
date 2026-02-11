@@ -14,7 +14,11 @@
             "servertype": "jlink",
             "device": "SWM181xB",
             "interface": "swd",
-            "svdFile": "${workspaceFolder}/SWM181.svd"
+            "svdFile": "${workspaceFolder}/SWM181.svd",
+            "liveWatch": {
+                "enabled": true,
+                "samplesPerSecond": 4
+            }
         },
         {
             "name": "SWM181 (OpenOCD)",
@@ -33,7 +37,11 @@
             ],
             "openOCDLaunchCommands": [
                 "set CHIPNAME swm181"
-            ]
+            ],
+            "liveWatch": {
+                "enabled": true,
+                "samplesPerSecond": 4
+            }
         },
         {
             "name": "SWM181 (pyOCD)",
@@ -45,7 +53,11 @@
             "servertype": "pyocd",
             "interface": "swd",
             "svdFile": "${workspaceFolder}/SWM181.svd",
-            "loadFiles": []
+            "loadFiles": [],
+            "liveWatch": {
+                "enabled": true,
+                "samplesPerSecond": 4
+            }
         },
         {
             "name": "SWM181 (ST-Link GDB Server)",
@@ -57,7 +69,11 @@
             "servertype": "stlink",
             "interface": "swd",
             "svdFile": "${workspaceFolder}/SWM181.svd",
-            "loadFiles": []
+            "loadFiles": [],
+            "liveWatch": {
+                "enabled": true,
+                "samplesPerSecond": 4
+            }
         }
     ]
 }
