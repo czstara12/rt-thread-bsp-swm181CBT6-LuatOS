@@ -1,0 +1,63 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "SWM181 (J-Link)",
+            "cwd": "${workspaceFolder}",
+            "executable": "rtthread.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "runToEntryPoint": "main",
+            "servertype": "jlink",
+            "device": "SWM181xB",
+            "interface": "swd",
+            "svdFile": "${workspaceFolder}/SWM181.svd"
+        },
+        {
+            "name": "SWM181 (OpenOCD)",
+            "cwd": "${workspaceFolder}",
+            "executable": "rtthread.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "runToEntryPoint": "main",
+            "servertype": "openocd",
+            "interface": "swd",
+            "svdFile": "${workspaceFolder}/SWM181.svd",
+            "loadFiles": [],
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/cortex_m.cfg"
+            ],
+            "openOCDLaunchCommands": [
+                "set CHIPNAME swm181"
+            ]
+        },
+        {
+            "name": "SWM181 (pyOCD)",
+            "cwd": "${workspaceFolder}",
+            "executable": "rtthread.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "runToEntryPoint": "main",
+            "servertype": "pyocd",
+            "interface": "swd",
+            "svdFile": "${workspaceFolder}/SWM181.svd",
+            "loadFiles": []
+        },
+        {
+            "name": "SWM181 (ST-Link GDB Server)",
+            "cwd": "${workspaceFolder}",
+            "executable": "rtthread.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "runToEntryPoint": "main",
+            "servertype": "stlink",
+            "interface": "swd",
+            "svdFile": "${workspaceFolder}/SWM181.svd",
+            "loadFiles": []
+        }
+    ]
+}
