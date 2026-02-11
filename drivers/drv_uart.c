@@ -26,16 +26,20 @@ struct swm181_uart_dev
 
 void IRQ0_Handler(void)
 {
-    /* read interrupt status and clear it */
-    if (UART_INTRXThresholdStat(UART0) || UART_INTTimeoutStat(UART0)) /* rx ind */
+    rt_interrupt_enter();
+
+    if (UART_INTRXThresholdStat(UART0) || UART_INTTimeoutStat(UART0))
     {
         rt_hw_serial_isr(&uart0_dev.parent, RT_SERIAL_EVENT_RX_IND);
     }
 
-    if (0) /* tx done */
+    if (UART_INTTXDoneStat(UART0))
     {
+        UART_INTTXDoneDis(UART0);
         rt_hw_serial_isr(&uart0_dev.parent, RT_SERIAL_EVENT_TX_DONE);
     }
+
+    rt_interrupt_leave();
 }
 
 /*
@@ -115,12 +119,17 @@ static rt_err_t swm181_uart_control(struct rt_serial_device *serial, int cmd, vo
     {
     case RT_DEVICE_CTRL_CLR_INT:
         /* Disable the UART Interrupt */
+        UART_INTRXThresholdDis(UART0);
+        UART_INTTimeoutDis(UART0);
+        UART_INTTXDoneDis(UART0);
         NVIC_DisableIRQ(IRQ0_IRQ);
         break;
 
     case RT_DEVICE_CTRL_SET_INT:
         /* install interrupt */
         /* Enable the UART Interrupt */
+        UART_INTRXThresholdEn(UART0);
+        UART_INTTimeoutEn(UART0);
         NVIC_EnableIRQ(IRQ0_IRQ);
         break;
 

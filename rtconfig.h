@@ -87,6 +87,7 @@
 #define RT_USING_SPI
 #define RT_USING_PWM
 #define RT_USING_WDT
+#define RT_USING_RTC
 
 /* Using USB */
 
@@ -299,6 +300,8 @@
 #define BSP_USING_SPI1
 
 #define BSP_USING_WDT
+
+#define BSP_USING_RTC
 
 /* HWtimer Drivers */
 
