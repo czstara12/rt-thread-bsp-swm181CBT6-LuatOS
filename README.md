@@ -31,6 +31,69 @@ export RTT_ROOT=[RTT仓库路径]
 
 ![board](figures/board.png)
 
+## 编译说明
+
+本 BSP 为开发者提供 MDK5 工程。下面以 MDK5 开发环境为例，介绍如何将系统运行起来。
+
+双击 project.uvprojx 文件，打开 MDK5 工程，编译并下载程序到开发板。
+
+> 工程默认配置使用 Jlink 仿真器下载程序，在通过 Jlink 连接开发板到 PC 的基础上，点击下载按钮即可下载程序到开发板
+
+推荐熟悉 RT_Thread 的用户使用[env工具](https://www.rt-thread.org/page/download.html)，可以在console下进入到 `bsp/synwit/swm181CBT6-LuatOS`目录中，运行以下命令：
+
+`scons`
+
+来编译这个板级支持包。如果编译正确无误，会产生rtthread.elf、rtthread.bin文件。其中 rtthread.bin 可以烧写到设备中运行。
+
+## 烧写及执行
+
+### 硬件连接
+
+- 使用 USB C-Type 数据线连接开发板到 PC（注意：需要下载安装串口驱动支持 CH340 芯片，使用 MDK5 需要安装 SWM181 相关的 pack）。
+
+  >  USB B-Type 数据线用于串口通讯，同时供电
+
+- 使用 swd 连接开发板到 PC （需要 Jlink 驱动）
+
+串口 0 引脚为：`[PA0/PA1]`和 USB串口CH340 相连，串口配置方式为115200-N-8-1。
+
+当使用 [env工具](https://www.rt-thread.org/page/download.html) 正确编译产生出rtthread.bin映像文件后，可以使用 ISP 的方式来烧写到设备中。
+
+**建议使用 keil 软件直接下载**。ISP 下载较复杂。
+
+### 运行结果
+
+如果编译 & 烧写无误，当复位设备后，会在串口上看到板子上的蓝色LED闪烁。串口打印RT-Thread的启动logo信息：
+
+```
+ \ | /
+- RT -     Thread Operating System
+ / | \     5.3.0 build Feb 12 2026
+ 2006 - 2024 Copyright by RT-Thread team
+msh >
+```
+## 外设支持
+
+本 BSP 使用**开发板物理引脚编号**，用户可直接根据开发板丝印配置 `menuconfig`。
+
+| **片上外设**        | **支持情况**  | **备注**                              |
+| :----------------- | :----------: | :----------------------------------- |
+| GPIO               |     支持     | 支持物理编号 1-53 (PA0~PE7)，含中断映射  |
+| UART               |     支持     | UART0~UART3 多实例，引脚可灵活配置      |
+| ADC                |     支持     | ADC0 (通道 0~7)，支持自动引脚初始化     |
+| I2C                |     支持     | I2C0, I2C1 硬件模式，支持多实例         |
+| PWM                |     支持     | PWM0~PWM3，各含 A/B 双通道              |
+| SPI                |     支持     | SPI0, SPI1 硬件模式，支持多实例         |
+| CAN                |     支持     | CAN1 硬件驱动实现                      |
+| WDT                |     支持     | 硬件看门狗，支持超时/喂狗/启停          |
+| RTC                |   支持(软)  | 基于系统 tick 的软 RTC（掉电不保持）    |
+| HWTIMER            |   暂不支持   | 硬件支持，但驱动层因框架缺失暂未启用     |
+| FLASH (IAP)        |   暂不支持   | 硬件支持，驱动层待适配 (FAL/IAP)        |
+| DMA                |   暂不支持   | 硬件支持，驱动层待适配                  |
+| SDADC              |   暂不支持   | 24位 Sigma-Delta ADC，驱动待实现        |
+| SLCD               |   暂不支持   | 段码屏驱动，驱动待实现                  |
+
+
 ## 芯片介绍
 
 SWM181 系列 32 位 MCU（以下简称 SWM181）内嵌 ARM® CortexTM-M0 内核，凭借其出色的性能以及高可靠性、低功耗、代码密度大等突出特点，可应用于工业控制、电机控制、白色家电等多种领域。 SWM181 支持片上包含精度为 1%以内的 24MHz、48MHz 时钟，并提供最大为 248K 字节的 FLASH 和最大 16K 字节的 SRAM。此外，芯片支持 ISP（在系统编程）操作及 IAP （在应用编程），用户可自定义 BOOT 程序。 SWM181外设串行总线包括 1 个 CAN 接口，多个 UART 接口、SPI 通信接口（支持主/ 从选择）及 I2C 接口（支持主/从选择），此外还具有 1 个 32 位看门狗定时器，4 组 32 位通用定时器（其中 1 组支持 Hall 接口），4 组（8 通道）PWM 控制模块，1 个 8 通道 12 位、 1MSPS 的逐次逼近型 ADC 模块，1 个 6 通道、支持单端及差分输入的 16 位 SIGMA-DELTA ADC，32 位除法模块，段码式液晶驱动模块，角度计算模块，以及 3 路比较器模块，同时提供欠压检测及低电压复位功能。
@@ -100,67 +163,6 @@ CAN*1，支持协议 2.0A(11bit 标识符)和 2.0B（29bit 标识符）
 
 详细信息见数据手册，[华芯微特SWM181数据手册V2.07.pdf](https://cdn.openluat-luatcommunity.openluat.com/attachment/20220721163511464_华芯微特SWM181数据手册V2.07.pdf)
 
-## 编译说明
-
-本 BSP 为开发者提供 MDK5 工程。下面以 MDK5 开发环境为例，介绍如何将系统运行起来。
-
-双击 project.uvprojx 文件，打开 MDK5 工程，编译并下载程序到开发板。
-
-> 工程默认配置使用 Jlink 仿真器下载程序，在通过 Jlink 连接开发板到 PC 的基础上，点击下载按钮即可下载程序到开发板
-
-推荐熟悉 RT_Thread 的用户使用[env工具](https://www.rt-thread.org/page/download.html)，可以在console下进入到 `bsp/synwit/swm181CBT6-LuatOS`目录中，运行以下命令：
-
-`scons`
-
-来编译这个板级支持包。如果编译正确无误，会产生rtthread.elf、rtthread.bin文件。其中 rtthread.bin 可以烧写到设备中运行。
-
-## 烧写及执行
-
-### 硬件连接
-
-- 使用 USB C-Type 数据线连接开发板到 PC（注意：需要下载安装串口驱动支持 CH340 芯片，使用 MDK5 需要安装 SWM181 相关的 pack）。
-
-  >  USB B-Type 数据线用于串口通讯，同时供电
-
-- 使用 swd 连接开发板到 PC （需要 Jlink 驱动）
-
-将串口 1 引脚为：`[PA2/PA3]`和 USB串口CH340 相连，串口配置方式为115200-N-8-1。
-
-当使用 [env工具](https://www.rt-thread.org/page/download.html) 正确编译产生出rtthread.bin映像文件后，可以使用 ISP 的方式来烧写到设备中。
-
-**建议使用 keil 软件直接下载**。ISP 下载较复杂。
-
-### 运行结果
-
-如果编译 & 烧写无误，当复位设备后，会在串口上看到板子上的蓝色LED闪烁。串口打印RT-Thread的启动logo信息：
-
-```
- \ | /
-- RT -     Thread Operating System
- / | \     4.0.0 build Dec 11 2018
- 2006 - 2018 Copyright by rt-thread team
-msh />
-```
-## 外设支持
-
-本 BSP 目前对外设的支持情况如下：
-
-| **片上外设**        | **支持情况**  | **备注**                              |
-| :----------------- | :----------: | :----------------------------------- |
-| GPIO               |     支持     | PA0~PE7，支持输入/输出/中断映射         |
-| UART               |     支持     | UART0~UART3，支持多实例，引脚可灵活配置 |
-| ADC                |     支持     | ADC0 (Channel 0~7)，支持自动引脚初始化  |
-| I2C                |     支持     | I2C0, I2C1 硬件模式，支持多实例         |
-| PWM                |     支持     | PWM0~PWM3，各含 A/B 双通道              |
-| SPI                |     支持     | SPI0, SPI1 硬件模式，支持多实例         |
-| CAN                |     支持     | CAN1 硬件驱动实现                      |
-| WDT                |     支持     | 硬件看门狗，支持超时/喂狗/启停          |
-| RTC                |   支持(软)  | 基于系统 tick 的软 RTC（掉电不保持）    |
-| HWTIMER            |   暂不支持   | 硬件支持，但驱动层因框架缺失暂未启用     |
-| FLASH (IAP)        |   暂不支持   | 硬件支持，驱动层待适配 (FAL/IAP)        |
-| DMA                |   暂不支持   | 硬件支持，驱动层待适配                  |
-| SDADC              |   暂不支持   | 24位 Sigma-Delta ADC，驱动待实现        |
-| SLCD               |   暂不支持   | 段码屏驱动，驱动待实现                  |
 
 ## 维护人信息
 
