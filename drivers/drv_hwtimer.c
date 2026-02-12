@@ -1,149 +1,151 @@
 /*
- * Copyright (c) 2006-2018, RT-Thread Development Team
+ * Copyright (c) 2006-2022, RT-Thread Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
+ * 2022-02-12     Gemini       first version
  */
 
 #include <rthw.h>
 #include <rtthread.h>
 #include <rtdevice.h>
+#include "board.h"
 #include "drv_hwtimer.h"
 
 #ifdef RT_USING_HWTIMER
 
-#define SKT_HWTIMER_DEVICE(hwtimer)    (struct skt_hwtimer_dev *)(hwtimer)
-
-static struct skt_hwtimer_dev hwtimer0;
-
-struct skt_hwtimer_dev
+struct swm181_hwtimer
 {
     rt_hwtimer_t parent;
-    rt_uint32_t hwtimer_periph;
-    rt_uint32_t irqno;
+    TIMR_TypeDef *TIMRx;
+    IRQn_Type irqn;
+    uint32_t periph_irq;
+    const char *name;
 };
 
-void skt_hwtimer_isr(int irqno, void *param)
+static rt_err_t swm181_hwtimer_control(rt_hwtimer_t *timer, rt_uint32_t cmd, void *args)
 {
-    struct skt_hwtimer_dev *hwtimer = SKT_HWTIMER_DEVICE(param);
-
-    RT_ASSERT(hwtimer != RT_NULL);
-
-    rt_device_hwtimer_isr(&hwtimer->parent);
-}
-
-static rt_err_t skt_hwtimer_control(rt_hwtimer_t *timer, rt_uint32_t cmd, void *args)
-{
-    rt_err_t ret = RT_EOK;
-    struct skt_hwtimer_dev *hwtimer = SKT_HWTIMER_DEVICE(timer->parent.user_data);
-
-    RT_ASSERT(hwtimer != RT_NULL);
+    struct swm181_hwtimer *hwtimer = (struct swm181_hwtimer *)timer;
 
     switch (cmd)
     {
     case HWTIMER_CTRL_FREQ_SET:
-
-        /* Todo:set the count frequency */
-        break;
-
+        // SWM181 timers run at SystemCoreClock. Fixed frequency.
+        return -RT_ERROR;
     case HWTIMER_CTRL_STOP:
-
-        /* Todo:stop timer */
+        TIMR_Stop(hwtimer->TIMRx);
         break;
-
-    case HWTIMER_CTRL_INFO_GET:
-
-        /* Todo:get a timer feature information */
-        break;
-
     case HWTIMER_CTRL_MODE_SET:
-
-        /* Todo:Set the timing mode(oneshot/period) */
-        break;
-    default:
-
+        // Modes are handled in start
         break;
     }
-    return ret;
+    return RT_EOK;
 }
 
-static rt_uint32_t skt_hwtimer_count_get(rt_hwtimer_t *timer)
+static rt_uint32_t swm181_hwtimer_count_get(rt_hwtimer_t *timer)
 {
-    struct skt_hwtimer_dev *hwtimer = SKT_HWTIMER_DEVICE(timer->parent.user_data);
-
-    RT_ASSERT(hwtimer != RT_NULL);
-
-    /* Todo: get hwtimer(hwtimer->hwtimer_periph) counter value*/
-    return 0;
+    struct swm181_hwtimer *hwtimer = (struct swm181_hwtimer *)timer;
+    // SWM181 timer is down counter
+    return TIMR_GetPeriod(hwtimer->TIMRx) - TIMR_GetCurValue(hwtimer->TIMRx);
 }
 
-static void skt_hwtimer_init(rt_hwtimer_t *timer, rt_uint32_t state)
+static void swm181_hwtimer_init(rt_hwtimer_t *timer, rt_uint32_t state)
 {
-    struct skt_hwtimer_dev *hwtimer = SKT_HWTIMER_DEVICE(timer->parent.user_data);
-
-    RT_ASSERT(hwtimer != RT_NULL);
-
-    /* Todo:init hwtimer(hwtimer->hwtimer_periph)*/
+    struct swm181_hwtimer *hwtimer = (struct swm181_hwtimer *)timer;
+    if (state)
+    {
+        TIMR_Init(hwtimer->TIMRx, TIMR_MODE_TIMER, 0xFFFFFFFF, 1);
+        IRQ_Connect(hwtimer->periph_irq, hwtimer->irqn, 1);
+        NVIC_EnableIRQ(hwtimer->irqn);
+    }
+    else
+    {
+        TIMR_Stop(hwtimer->TIMRx);
+        NVIC_DisableIRQ(hwtimer->irqn);
+    }
 }
 
-static rt_err_t skt_hwtimer_start(rt_hwtimer_t *timer, rt_uint32_t cnt, rt_hwtimer_mode_t mode)
+static rt_err_t swm181_hwtimer_start(rt_hwtimer_t *timer, rt_uint32_t cnt, rt_hwtimer_mode_t mode)
 {
-    rt_err_t ret = RT_EOK;
-    struct skt_hwtimer_dev *hwtimer = SKT_HWTIMER_DEVICE(timer->parent.user_data);
+    struct swm181_hwtimer *hwtimer = (struct swm181_hwtimer *)timer;
+    
+    TIMR_Stop(hwtimer->TIMRx);
+    TIMR_SetPeriod(hwtimer->TIMRx, cnt);
+    TIMR_INTClr(hwtimer->TIMRx);
+    TIMR_Start(hwtimer->TIMRx);
 
-    RT_ASSERT(hwtimer != RT_NULL);
-
-    /* Todo:start hwtimer(hwtimer->hwtimer_periph)*/
-
-    /* install interrupt */
-    /*
-    rt_hw_interrupt_install(hwtimer->irqno, skt_hwtimer_isr,
-                            hwtimer, hwtimer->parent.parent.parent.name);
-    */
-    /* Enable Interrupt */
-    /* rt_hw_interrupt_umask(hwtimer->irqno);*/
-
-    return ret;
+    return RT_EOK;
 }
 
-static void skt_hwtimer_stop(rt_hwtimer_t *timer)
+static void swm181_hwtimer_stop(rt_hwtimer_t *timer)
 {
-    struct skt_hwtimer_dev *hwtimer = SKT_HWTIMER_DEVICE(timer->parent.user_data);
-
-    RT_ASSERT(hwtimer != RT_NULL);
-
-    /* Todo:stop hwtimer(hwtimer->hwtimer_periph)*/
+    struct swm181_hwtimer *hwtimer = (struct swm181_hwtimer *)timer;
+    TIMR_Stop(hwtimer->TIMRx);
 }
 
-const static struct rt_hwtimer_ops hwtimer_ops =
+static const struct rt_hwtimer_ops swm181_hwtimer_ops =
 {
-    skt_hwtimer_init,
-    skt_hwtimer_start,
-    skt_hwtimer_stop,
-    skt_hwtimer_count_get,
-    skt_hwtimer_control
+    swm181_hwtimer_init,
+    swm181_hwtimer_start,
+    swm181_hwtimer_stop,
+    swm181_hwtimer_count_get,
+    swm181_hwtimer_control
 };
 
-const static struct rt_hwtimer_info hwtimer_info =
-{
-    25000000,               /* the maximum count frequency can be set */
-    6103,                   /* the minimum count frequency can be set */
-    0xFFFFFFFF,             /* counter maximum value */
-    HWTIMER_CNTMODE_UP,     /* count mode (inc/dec) */
+static struct swm181_hwtimer hwtimer_objs[] = {
+#ifdef BSP_USING_HWTIMER0
+    { .TIMRx = TIMR0, .irqn = IRQ5_IRQ, .periph_irq = IRQ0_15_TIMR0, .name = "timer0" },
+#endif
+#ifdef BSP_USING_HWTIMER1
+    { .TIMRx = TIMR1, .irqn = IRQ6_IRQ, .periph_irq = IRQ0_15_TIMR1, .name = "timer1" },
+#endif
+#ifdef BSP_USING_HWTIMER2
+    { .TIMRx = TIMR2, .irqn = IRQ7_IRQ, .periph_irq = IRQ0_15_TIMR2, .name = "timer2" },
+#endif
+#ifdef BSP_USING_HWTIMER3
+    { .TIMRx = TIMR3, .irqn = IRQ8_IRQ, .periph_irq = IRQ0_15_TIMR3, .name = "timer3" },
+#endif
 };
+
+#ifdef BSP_USING_HWTIMER0
+void IRQ5_Handler(void)
+{
+    rt_interrupt_enter();
+    TIMR_INTClr(TIMR0);
+    rt_device_hwtimer_isr(&hwtimer_objs[0].parent);
+    rt_interrupt_leave();
+}
+#endif
+
+#ifdef BSP_USING_HWTIMER1
+void IRQ6_Handler(void)
+{
+    rt_interrupt_enter();
+    TIMR_INTClr(TIMR1);
+    int idx = 0;
+#ifdef BSP_USING_HWTIMER0
+    idx++;
+#endif
+    rt_device_hwtimer_isr(&hwtimer_objs[idx].parent);
+    rt_interrupt_leave();
+}
+#endif
 
 int rt_hw_hwtimer_init(void)
 {
-    rt_err_t ret = RT_EOK;
-    hwtimer0.parent.info = &hwtimer_info;
-    hwtimer0.parent.ops  = &hwtimer_ops;
+    int i;
+    
+    for (i = 0; i < sizeof(hwtimer_objs) / sizeof(hwtimer_objs[0]); i++)
+    {
+        hwtimer_objs[i].parent.info = &(struct rt_hwtimer_info){SystemCoreClock, SystemCoreClock, 0xFFFFFFFF, HWTIMER_CNTMODE_DW};
+        hwtimer_objs[i].parent.ops  = &swm181_hwtimer_ops;
+        rt_device_hwtimer_register(&hwtimer_objs[i].parent, hwtimer_objs[i].name, &hwtimer_objs[i]);
+    }
 
-    ret = rt_device_hwtimer_register(&hwtimer0.parent, "timer0", &hwtimer0);
-
-    return ret;
+    return 0;
 }
-INIT_DEVICE_EXPORT(rt_hw_hwtimer_init);
+INIT_BOARD_EXPORT(rt_hw_hwtimer_init);
 
 #endif /* RT_USING_HWTIMER */

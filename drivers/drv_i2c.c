@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2006-2018, RT-Thread Development Team
+ * Copyright (c) 2006-2022, RT-Thread Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
+ * 2022-02-12     Gemini       first version
  */
 
 #include <rtdevice.h>
@@ -14,33 +15,22 @@
 
 #ifdef RT_USING_I2C
 
-#define SKT_I2C_DEVICE(i2c_bus)    (struct skt_i2c_bus *)(i2c_bus)
+#if !defined(BSP_USING_I2C0) && !defined(BSP_USING_I2C1)
+#error "Please define at least one BSP_USING_I2Cx"
+#endif
 
-static struct skt_i2c_bus i2c_bus0;
-static struct skt_i2c_bus i2c_bus1;
-
-struct skt_i2c_bus
+struct swm181_i2c_bus
 {
     struct rt_i2c_bus_device parent;
-    rt_uint32_t i2c_periph;
+    I2C_TypeDef *I2Cx;
+    const char *name;
 };
 
-static rt_uint32_t skt_i2c_msg_addr(const struct rt_i2c_msg *msg)
+static rt_ssize_t swm181_i2c_master_xfer(struct rt_i2c_bus_device *bus, struct rt_i2c_msg msgs[], rt_uint32_t num)
 {
-    rt_uint32_t addr = msg->addr & 0x7FU;
-    rt_uint32_t rw = (msg->flags & RT_I2C_RD) ? 1U : 0U;
-    return (addr << 1) | rw;
-}
-
-static rt_ssize_t skt_i2c_master_xfer(struct rt_i2c_bus_device *bus, struct rt_i2c_msg msgs[], rt_uint32_t num)
-{
-    struct skt_i2c_bus *i2c_bus = SKT_I2C_DEVICE(bus);
-    I2C_TypeDef *I2Cx;
+    struct swm181_i2c_bus *i2c_bus = (struct swm181_i2c_bus *)bus;
+    I2C_TypeDef *I2Cx = i2c_bus->I2Cx;
     rt_uint32_t i;
-
-    RT_ASSERT(i2c_bus != RT_NULL);
-    I2Cx = (I2C_TypeDef *)i2c_bus->i2c_periph;
-    RT_ASSERT(I2Cx != RT_NULL);
 
     for (i = 0; i < num; i++)
     {
@@ -50,7 +40,9 @@ static rt_ssize_t skt_i2c_master_xfer(struct rt_i2c_bus_device *bus, struct rt_i
 
         if ((msg->flags & RT_I2C_NO_START) == 0)
         {
-            rt_uint8_t ack = I2C_Start(I2Cx, (rt_uint8_t)skt_i2c_msg_addr(msg));
+            rt_uint32_t addr = msg->addr & 0x7FU;
+            rt_uint32_t rw = (msg->flags & RT_I2C_RD) ? 1U : 0U;
+            rt_uint8_t ack = I2C_Start(I2Cx, (uint8_t)((addr << 1) | rw));
             if (!ack && !ignore_nack)
             {
                 I2C_Stop(I2Cx);
@@ -96,20 +88,26 @@ static rt_ssize_t skt_i2c_master_xfer(struct rt_i2c_bus_device *bus, struct rt_i
     return num;
 }
 
-const static struct rt_i2c_bus_device_ops skt_i2c_ops =
+static const struct rt_i2c_bus_device_ops swm181_i2c_ops =
 {
-    skt_i2c_master_xfer,
+    swm181_i2c_master_xfer,
     RT_NULL,
     RT_NULL
 };
 
+static struct swm181_i2c_bus i2c_objs[] = {
+#ifdef BSP_USING_I2C0
+    { .I2Cx = I2C0, .name = "i2c0" },
+#endif
+#ifdef BSP_USING_I2C1
+    { .I2Cx = I2C1, .name = "i2c1" },
+#endif
+};
+
 int rt_hw_i2c_init(void)
 {
-    rt_err_t ret = RT_EOK;
     I2C_InitStructure init_struct;
-
-    i2c_bus0.parent.ops = &skt_i2c_ops;
-    i2c_bus1.parent.ops = &skt_i2c_ops;
+    int i;
 
     init_struct.Master = 1;
     init_struct.Addr7b = 1;
@@ -124,21 +122,24 @@ int rt_hw_i2c_init(void)
     init_struct.SlvRdReqIEn = 0;
     init_struct.SlvWrReqIEn = 0;
 
-    i2c_bus0.i2c_periph = (rt_uint32_t)I2C0;
-    I2C_Init((I2C_TypeDef *)i2c_bus0.i2c_periph, &init_struct);
-    I2C_Open((I2C_TypeDef *)i2c_bus0.i2c_periph);
-    ret = rt_i2c_bus_device_register(&i2c_bus0.parent, "i2c0");
-    if (ret != RT_EOK)
+#ifdef BSP_USING_I2C0
+    PORT_Init(PORTA, PIN12, FUNMUX_I2C0_SCL, 1);
+    PORT_Init(PORTA, PIN13, FUNMUX_I2C0_SDA, 1);
+#endif
+#ifdef BSP_USING_I2C1
+    PORT_Init(PORTB, PIN10, FUNMUX_I2C1_SCL, 1);
+    PORT_Init(PORTB, PIN11, FUNMUX_I2C1_SDA, 1);
+#endif
+
+    for (i = 0; i < sizeof(i2c_objs) / sizeof(i2c_objs[0]); i++)
     {
-        return ret;
+        i2c_objs[i].parent.ops = &swm181_i2c_ops;
+        I2C_Init(i2c_objs[i].I2Cx, &init_struct);
+        I2C_Open(i2c_objs[i].I2Cx);
+        rt_i2c_bus_device_register(&i2c_objs[i].parent, i2c_objs[i].name);
     }
 
-    i2c_bus1.i2c_periph = (rt_uint32_t)I2C1;
-    I2C_Init((I2C_TypeDef *)i2c_bus1.i2c_periph, &init_struct);
-    I2C_Open((I2C_TypeDef *)i2c_bus1.i2c_periph);
-    ret = rt_i2c_bus_device_register(&i2c_bus1.parent, "i2c1");
-
-    return ret;
+    return 0;
 }
 INIT_DEVICE_EXPORT(rt_hw_i2c_init);
 

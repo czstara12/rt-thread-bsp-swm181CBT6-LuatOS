@@ -147,32 +147,35 @@ msh />
 
 | **片上外设**        | **支持情况**  | **备注**                              |
 | :----------------- | :----------: | :----------------------------------- |
-| GPIO               |     支持     | PA0, PA1... PP23 ---> PIN: 0, 1...100（中断/IRQ 已实现） |
-| UART               |     支持     | UART0 基础收发可用（DMA/部分中断路径待完善） |
-| ADC                |   支持(基础)  | adc0 单次轮询转换（通道引脚复用需按硬件配置） |
-| TIM                |     ?     | TIM0/1/2/3/4/5（暂未接入 RT-Thread 定时器框架） |
-| I2C                |   支持(基础)  | i2c0/i2c1 主机轮询（仅 7bit 地址） |
-| PWM                |   支持(基础)  | pwm0/pwm1，通道 0/1 映射 A/B |
-| RTC                |   支持(软)  | 基于系统 tick 的软 RTC（掉电不保持） |
-| SPI                |   支持(基础)  | spi0/spi1 主机轮询（软件 CS） |
-| WDT                |   支持(基础)  | wdt 超时/喂狗/启停（超时时间按秒配置） |
-| CRC                |     ?     | CRC                                   |
-| SDIO               |     ?     | SDIO（仅占位，未实现 Host/设备注册） |
-| SRAM               |     ?     | SRAM                                  |
-| NOR FLASH          |     ?     | NOR FLASH                             |
-| CAN                |    暂不支持   |                                       |
+| GPIO               |     支持     | PA0~PE7，支持输入/输出/中断映射         |
+| UART               |     支持     | UART0~UART3，支持多实例，引脚可灵活配置 |
+| ADC                |     支持     | ADC0 (Channel 0~7)，支持自动引脚初始化  |
+| I2C                |     支持     | I2C0, I2C1 硬件模式，支持多实例         |
+| PWM                |     支持     | PWM0~PWM3，各含 A/B 双通道              |
+| SPI                |     支持     | SPI0, SPI1 硬件模式，支持多实例         |
+| CAN                |     支持     | CAN1 硬件驱动实现                      |
+| WDT                |     支持     | 硬件看门狗，支持超时/喂狗/启停          |
+| RTC                |   支持(软)  | 基于系统 tick 的软 RTC（掉电不保持）    |
+| HWTIMER            |   暂不支持   | 硬件支持，但驱动层因框架缺失暂未启用     |
+| FLASH (IAP)        |   暂不支持   | 硬件支持，驱动层待适配 (FAL/IAP)        |
+| DMA                |   暂不支持   | 硬件支持，驱动层待适配                  |
+| SDADC              |   暂不支持   | 24位 Sigma-Delta ADC，驱动待实现        |
+| SLCD               |   暂不支持   | 段码屏驱动，驱动待实现                  |
 
 ## 维护人信息
 
 - [czstara12](https://github.com/czstara12)
+- [Gemini (CLI Agent)](https://github.com/google/gemini-cli)
 - [邮箱](czstara12@3939831.xyz)
 
 ## 参考资料
 
 * [RT-Thread 文档中心](https://www.rt-thread.org/document/site/)
 * [SWM181数据手册](https://www.synwit.cn/uploads/soft/20220722/1-220H21TRIJ.pdf)
-* [LuatOSwiki](https://wiki.luatos.com/chips/swm181/index.html)
+* [LuatOS-SWM181 硬件说明](https://wiki.luatos.com/chips/swm181/board.html)
 
 # TODO
 
-1. 完成对所有外设的支持
+1. 补全 Flash (FAL) 驱动，实现片上数据持久化存储。
+2. 适配 DMA 驱动以优化外设传输性能。
+3. 补全 SDADC 和 SLCD 等特殊外设驱动。

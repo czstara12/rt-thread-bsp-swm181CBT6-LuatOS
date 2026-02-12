@@ -88,6 +88,8 @@
 #define RT_USING_PWM
 #define RT_USING_WDT
 #define RT_USING_RTC
+#define RT_USING_HWTIMER
+#define RT_USING_CAN
 
 /* Using USB */
 
@@ -305,9 +307,12 @@
 
 /* HWtimer Drivers */
 
+#define BSP_USING_HWTIMER0
+#define BSP_USING_HWTIMER1
 
 /* I2C Drivers */
 
+#define BSP_USING_CAN
 
 /* PWM Drivers */
 

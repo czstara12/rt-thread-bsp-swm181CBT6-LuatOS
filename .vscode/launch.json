@@ -33,11 +33,9 @@
             "loadFiles": [],
             "configFiles": [
                 "interface/stlink.cfg",
-                "target/cortex_m.cfg"
+                "${workspaceFolder}/.vscode/swm181.cfg"
             ],
-            "openOCDLaunchCommands": [
-                "set CHIPNAME swm181"
-            ],
+            "openOCDLaunchCommands": [],
             "liveWatch": {
                 "enabled": true,
                 "samplesPerSecond": 4

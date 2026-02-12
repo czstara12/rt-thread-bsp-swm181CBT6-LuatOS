@@ -22,7 +22,8 @@ if GetDepend('BSP_USING_EMAC'):
     src += ['drv_emac.c']
 
 if GetDepend('BSP_USING_HWTIMER0') or GetDepend('BSP_USING_HWTIMER1'):
-    src += ['drv_hwtimer.c']
+    # src += ['drv_hwtimer.c']
+    pass
 
 if GetDepend('BSP_USING_I2C0') or GetDepend('BSP_USING_I2C1'):
     src += ['drv_i2c.c']
@@ -44,6 +45,9 @@ if GetDepend('BSP_USING_SPI0') or GetDepend('BSP_USING_SPI1'):
 
 if GetDepend('BSP_USING_WDT'):
     src += ['drv_wdt.c']
+
+if GetDepend('BSP_USING_CAN'):
+    src += ['drv_can.c']
 
 if GetDepend(['BSP_USING_WIFI']):
     src += ['drv_wlan.c']

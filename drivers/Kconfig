@@ -12,6 +12,21 @@ menu "Hardware Drivers Config"
                 bool "Enable UART0 (PA0/1,RX/TX)"
                 select RT_USING_SERIAL
                 default y
+
+            config BSP_USING_UART1
+                bool "Enable UART1"
+                select RT_USING_SERIAL
+                default n
+
+            config BSP_USING_UART2
+                bool "Enable UART2"
+                select RT_USING_SERIAL
+                default n
+
+            config BSP_USING_UART3
+                bool "Enable UART3"
+                select RT_USING_SERIAL
+                default n
         endmenu
 
         config BSP_USING_LCD
@@ -60,6 +75,16 @@ menu "Hardware Drivers Config"
                 bool "Using timer1"
                 select RT_USING_HWTIMER 
                 default n
+
+            config BSP_USING_HWTIMER2
+                bool "Using timer2"
+                select RT_USING_HWTIMER 
+                default n
+
+            config BSP_USING_HWTIMER3
+                bool "Using timer3"
+                select RT_USING_HWTIMER 
+                default n
         endmenu
 
         menu "I2C Drivers"
@@ -97,6 +122,11 @@ menu "Hardware Drivers Config"
                 select RT_USING_PWM
                 default n
         endmenu
+
+        config BSP_USING_CAN
+            bool "Enable CAN"
+            select RT_USING_CAN
+            default n
 
         menu "SPI Drivers"
             config BSP_USING_SPI0

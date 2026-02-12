@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2006-2018, RT-Thread Development Team
+ * Copyright (c) 2006-2022, RT-Thread Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
  * Change Logs:
  * Date           Author       Notes
+ * 2022-02-12     Gemini       first version
  */
 
 #include <rtdevice.h>
@@ -14,92 +15,87 @@
 
 #ifdef RT_USING_ADC
 
-#define SKT_ADC_DEVICE(adc_dev)    (struct skt_adc_dev *)(adc_dev)
-
-static struct skt_adc_dev adc_dev0;
-
-struct skt_adc_dev
+struct swm181_adc
 {
     struct rt_adc_device parent;
-    rt_uint32_t adc_periph;
-    rt_uint32_t channel;
+    ADC_TypeDef *ADCx;
     rt_uint32_t chn_mask;
 };
 
-static rt_err_t skt_adc_enabled(struct rt_adc_device *device, rt_int8_t channel, rt_bool_t enabled)
-{
-    rt_err_t ret = RT_EOK;
-    struct skt_adc_dev *adc = SKT_ADC_DEVICE(device);
-    rt_uint32_t chn;
+static struct swm181_adc adc_obj;
 
-    RT_ASSERT(adc != RT_NULL);
+static rt_err_t swm181_adc_enabled(struct rt_adc_device *device, rt_int8_t channel, rt_bool_t enabled)
+{
+    struct swm181_adc *adc = (struct swm181_adc *)device;
+    
     if (channel < 0 || channel > 7)
-    {
         return -RT_EINVAL;
-    }
-    chn = 1U << channel;
 
     if (enabled)
     {
-        adc->chn_mask |= chn;
-        ADC_ChnSelect((ADC_TypeDef *)adc->adc_periph, adc->chn_mask);
-        ADC_Open((ADC_TypeDef *)adc->adc_periph);
+        switch (channel)
+        {
+        case 0: PORT_Init(PORTE, PIN4, PORTE_PIN4_ADC_CH0, 0); break;
+        case 1: PORT_Init(PORTA, PIN15, PORTA_PIN15_ADC_CH1, 0); break;
+        case 2: PORT_Init(PORTA, PIN14, PORTA_PIN14_ADC_CH2, 0); break;
+        case 3: PORT_Init(PORTA, PIN13, PORTA_PIN13_ADC_CH3, 0); break;
+        case 4: PORT_Init(PORTA, PIN12, PORTA_PIN12_ADC_CH4, 0); break;
+        case 5: PORT_Init(PORTC, PIN7, PORTC_PIN7_ADC_CH5, 0); break;
+        case 6: PORT_Init(PORTC, PIN6, PORTC_PIN6_ADC_CH6, 0); break;
+        // Channel 7 might be internal
+        }
+        
+        adc->chn_mask |= (1U << channel);
+        ADC_ChnSelect(adc->ADCx, adc->chn_mask);
+        ADC_Open(adc->ADCx);
     }
     else
     {
-        adc->chn_mask &= ~chn;
-        ADC_ChnSelect((ADC_TypeDef *)adc->adc_periph, adc->chn_mask);
+        adc->chn_mask &= ~(1U << channel);
+        ADC_ChnSelect(adc->ADCx, adc->chn_mask);
         if (adc->chn_mask == 0)
-        {
-            ADC_Close((ADC_TypeDef *)adc->adc_periph);
-        }
+            ADC_Close(adc->ADCx);
     }
-    return ret;
+    
+    return RT_EOK;
 }
-static rt_err_t skt_adc_convert(struct rt_adc_device *device, rt_int8_t channel, rt_uint32_t *value)
+
+static rt_err_t swm181_adc_convert(struct rt_adc_device *device, rt_int8_t channel, rt_uint32_t *value)
 {
-    rt_err_t ret = RT_EOK;
-    struct skt_adc_dev *adc = SKT_ADC_DEVICE(device);
-    rt_uint32_t chn;
-    ADC_TypeDef *ADCx;
-    rt_uint32_t timeout = 0x100000;
+    struct swm181_adc *adc = (struct swm181_adc *)device;
+    rt_uint32_t chn_bit;
+    rt_uint32_t timeout = 0x10000;
 
-    RT_ASSERT(adc != RT_NULL);
     if (channel < 0 || channel > 7)
-    {
         return -RT_EINVAL;
-    }
-    chn = 1U << channel;
-    ADCx = (ADC_TypeDef *)adc->adc_periph;
-    RT_ASSERT(ADCx != RT_NULL);
 
+    chn_bit = (1U << channel);
+    
     if (value)
     {
-        ADC_ChnSelect(ADCx, chn);
-        ADC_Open(ADCx);
-        ADC_Start(ADCx);
-        while (!ADC_IsEOC(ADCx, chn) && timeout--)
-        {
-        }
-        *value = ADC_Read(ADCx, chn);
+        ADC_ChnSelect(adc->ADCx, chn_bit);
+        ADC_Open(adc->ADCx);
+        ADC_Start(adc->ADCx);
+        while (!ADC_IsEOC(adc->ADCx, chn_bit) && timeout--);
+        if (timeout == 0) return -RT_ETIMEOUT;
+        *value = ADC_Read(adc->ADCx, chn_bit);
     }
 
-    return ret;
+    return RT_EOK;
 }
 
-const static struct rt_adc_ops skt_adc_ops =
+static const struct rt_adc_ops swm181_adc_ops =
 {
-    skt_adc_enabled,
-    skt_adc_convert
+    swm181_adc_enabled,
+    swm181_adc_convert
 };
 
 int rt_hw_adc_init(void)
 {
-    rt_err_t ret = RT_EOK;
     ADC_InitStructure init_struct;
 
-    adc_dev0.adc_periph = (rt_uint32_t)ADC;
-    adc_dev0.chn_mask = 0;
+    adc_obj.ADCx = ADC;
+    adc_obj.chn_mask = 0;
 
     init_struct.clk_src = ADC_CLKSRC_HRC_DIV4;
     init_struct.channels = 0;
@@ -108,12 +104,10 @@ int rt_hw_adc_init(void)
     init_struct.Continue = 0;
     init_struct.EOC_IEn = 0;
     init_struct.OVF_IEn = 0;
-    ADC_Init((ADC_TypeDef *)adc_dev0.adc_periph, &init_struct);
-    ADC_Open((ADC_TypeDef *)adc_dev0.adc_periph);
+    
+    ADC_Init(adc_obj.ADCx, &init_struct);
 
-    ret = rt_hw_adc_register(&adc_dev0.parent, "adc0", &skt_adc_ops, &adc_dev0);
-
-    return ret;
+    return rt_hw_adc_register(&adc_obj.parent, "adc0", &swm181_adc_ops, RT_NULL);
 }
 INIT_DEVICE_EXPORT(rt_hw_adc_init);
 
