@@ -8,7 +8,7 @@
  */
 
 #include <rtthread.h>
-#include <drivers/dev_rtc.h>
+#include <rtdevice.h>
 #include "drv_rtc.h"
 
 #ifdef RT_USING_RTC
