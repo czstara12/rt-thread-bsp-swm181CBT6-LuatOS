@@ -14,10 +14,10 @@ menu "Hardware Drivers Config"
                 default y
             if BSP_USING_UART0
                 config BSP_UART0_RX_PIN
-                    int "UART0 RX Pin (30 for PA0)"
+                    int "UART0 RX Pin (30 for PA0, DO NOT use 47/48)"
                     default 30
                 config BSP_UART0_TX_PIN
-                    int "UART0 TX Pin (31 for PA1)"
+                    int "UART0 TX Pin (31 for PA1, DO NOT use 47/48)"
                     default 31
             endif
 
@@ -82,10 +82,10 @@ menu "Hardware Drivers Config"
             default n
         if BSP_USING_CAN
             config BSP_CAN_RX_PIN
-                int "CAN RX Pin (13 for PA12)"
+                int "CAN RX Pin (Flexible FUNMUX, e.g. 13 for PA12)"
                 default 13
             config BSP_CAN_TX_PIN
-                int "CAN TX Pin (12 for PA13)"
+                int "CAN TX Pin (Flexible FUNMUX, e.g. 12 for PA13)"
                 default 12
         endif
 
@@ -96,10 +96,10 @@ menu "Hardware Drivers Config"
                 default n
             if BSP_USING_I2C0
                 config BSP_I2C0_SCL_PIN
-                    int "I2C0 SCL Pin (13 for PA12)"
+                    int "I2C0 SCL Pin (Flexible FUNMUX, e.g. 13 for PA12)"
                     default 13
                 config BSP_I2C0_SDA_PIN
-                    int "I2C0 SDA Pin (12 for PA13)"
+                    int "I2C0 SDA Pin (Flexible FUNMUX, e.g. 12 for PA13)"
                     default 12
             endif
 
@@ -109,10 +109,10 @@ menu "Hardware Drivers Config"
                 default n
             if BSP_USING_I2C1
                 config BSP_I2C1_SCL_PIN
-                    int "I2C1 SCL Pin (40 for PB7)"
+                    int "I2C1 SCL Pin (e.g. 40 for PB7)"
                     default 40
                 config BSP_I2C1_SDA_PIN
-                    int "I2C1 SDA Pin (39 for PB6)"
+                    int "I2C1 SDA Pin (e.g. 39 for PB6)"
                     default 39
             endif
         endmenu
@@ -124,10 +124,10 @@ menu "Hardware Drivers Config"
                 default n
             if BSP_USING_PWM0
                 config BSP_PWM0_CH1_PIN
-                    int "PWM0 Channel A Pin (21 for PA8)"
+                    int "PWM0 Channel A Pin (Flexible FUNMUX)"
                     default 21
                 config BSP_PWM0_CH2_PIN
-                    int "PWM0 Channel B Pin (22 for PA9)"
+                    int "PWM0 Channel B Pin (Flexible FUNMUX)"
                     default 22
             endif
 
@@ -137,10 +137,10 @@ menu "Hardware Drivers Config"
                 default n
             if BSP_USING_PWM1
                 config BSP_PWM1_CH1_PIN
-                    int "PWM1 Channel A Pin (39 for PB6)"
+                    int "PWM1 Channel A Pin (Flexible FUNMUX)"
                     default 39
                 config BSP_PWM1_CH2_PIN
-                    int "PWM1 Channel B Pin (40 for PB7)"
+                    int "PWM1 Channel B Pin (Flexible FUNMUX)"
                     default 40
             endif
 
@@ -150,10 +150,10 @@ menu "Hardware Drivers Config"
                 default n
             if BSP_USING_PWM2
                 config BSP_PWM2_CH1_PIN
-                    int "PWM2 Channel A Pin (13 for PA12)"
+                    int "PWM2 Channel A Pin (Flexible FUNMUX)"
                     default 13
                 config BSP_PWM2_CH2_PIN
-                    int "PWM2 Channel B Pin (12 for PA13)"
+                    int "PWM2 Channel B Pin (Flexible FUNMUX)"
                     default 12
             endif
 
@@ -163,10 +163,10 @@ menu "Hardware Drivers Config"
                 default n
             if BSP_USING_PWM3
                 config BSP_PWM3_CH1_PIN
-                    int "PWM3 Channel A Pin (11 for PA14)"
+                    int "PWM3 Channel A Pin (Flexible FUNMUX)"
                     default 11
                 config BSP_PWM3_CH2_PIN
-                    int "PWM3 Channel B Pin (8 for PA15)"
+                    int "PWM3 Channel B Pin (Flexible FUNMUX)"
                     default 8
             endif
         endmenu
@@ -177,15 +177,12 @@ menu "Hardware Drivers Config"
                 select RT_USING_SPI
                 default n 
             if BSP_USING_SPI0
-                config BSP_SPI0_MISO_PIN
-                    int "SPI0 MISO Pin (22 for PA9)"
-                    default 22
-                config BSP_SPI0_MOSI_PIN
-                    int "SPI0 MOSI Pin (28 for PA10)"
-                    default 28
-                config BSP_SPI0_SCLK_PIN
-                    int "SPI0 SCLK Pin (29 for PA11)"
-                    default 29
+                config BSP_SPI0_PIN_GRP_A
+                    bool "Use PA9/10/11 (22/28/29)"
+                    default y
+                config BSP_SPI0_PIN_GRP_B
+                    bool "Use PA13/14/15 (12/11/8)"
+                    default n
             endif
 
             config BSP_USING_SPI1
@@ -193,15 +190,9 @@ menu "Hardware Drivers Config"
                 select RT_USING_SPI
                 default n
             if BSP_USING_SPI1
-                config BSP_SPI1_MISO_PIN
-                    int "SPI1 MISO Pin (41 for PC5)"
-                    default 41
-                config BSP_SPI1_MOSI_PIN
-                    int "SPI1 MOSI Pin (42 for PC4)"
-                    default 42
-                config BSP_SPI1_SCLK_PIN
-                    int "SPI1 SCLK Pin (44 for PC3)"
-                    default 44
+                config BSP_SPI1_PIN_FIXED
+                    bool "Fixed on PC5/6/7 (41/15/14)"
+                    default y
             endif
         endmenu
 

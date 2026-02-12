@@ -25,9 +25,6 @@ struct swm181_spi_bus
     struct rt_spi_bus parent;
     SPI_TypeDef *SPIx;
     const char *name;
-    uint32_t miso_pin;
-    uint32_t mosi_pin;
-    uint32_t sclk_pin;
 };
 
 static rt_uint8_t swm181_spi_clkdiv(rt_uint32_t max_hz)
@@ -133,10 +130,10 @@ static const struct rt_spi_ops swm181_spi_ops =
 
 static struct swm181_spi_bus spi_objs[] = {
 #ifdef BSP_USING_SPI0
-    { .SPIx = SPI0, .name = "spi0", .miso_pin = BSP_SPI0_MISO_PIN, .mosi_pin = BSP_SPI0_MOSI_PIN, .sclk_pin = BSP_SPI0_SCLK_PIN },
+    { .SPIx = SPI0, .name = "spi0" },
 #endif
 #ifdef BSP_USING_SPI1
-    { .SPIx = SPI1, .name = "spi1", .miso_pin = BSP_SPI1_MISO_PIN, .mosi_pin = BSP_SPI1_MOSI_PIN, .sclk_pin = BSP_SPI1_SCLK_PIN },
+    { .SPIx = SPI1, .name = "spi1" },
 #endif
 };
 
@@ -147,29 +144,27 @@ int rt_hw_spi_init(void)
     for (i = 0; i < sizeof(spi_objs) / sizeof(spi_objs[0]); i++)
     {
         struct swm181_spi_bus *bus = &spi_objs[i];
-        uint32_t miso_func = 0, mosi_func = 0, sclk_func = 0;
 
         if (bus->SPIx == SPI0) {
-            /* SPI0 物理引脚映射逻辑 (使用板载编号 1-53) */
-            /* MISO: PA9(22) -> FUNC 2, PA13(12) -> FUNC 4 */
-            if (bus->miso_pin == 22) miso_func = 2; else if (bus->miso_pin == 12) miso_func = 4;
-            /* MOSI: PA10(28) -> FUNC 2, PA14(11) -> FUNC 4 */
-            if (bus->mosi_pin == 28) mosi_func = 2; else if (bus->mosi_pin == 11) mosi_func = 4;
-            /* SCLK: PA11(29) -> FUNC 2, PA15(8) -> FUNC 4 */
-            if (bus->sclk_pin == 29) sclk_func = 2; else if (bus->sclk_pin == 8) sclk_func = 4;
+#if defined(BSP_SPI0_PIN_GRP_A)
+            /* PA9(22), PA10(28), PA11(29) */
+            PORT_Init(PORTA, PIN9,  2, 1);
+            PORT_Init(PORTA, PIN10, 2, 0);
+            PORT_Init(PORTA, PIN11, 2, 0);
+#elif defined(BSP_SPI0_PIN_GRP_B)
+            /* PA13(12), PA14(11), PA15(8) */
+            PORT_Init(PORTA, PIN13, 4, 1);
+            PORT_Init(PORTA, PIN14, 4, 0);
+            PORT_Init(PORTA, PIN15, 4, 0);
+#endif
         } else {
-            /* SPI1 物理引脚映射逻辑 */
-            /* MISO: PC5(41) -> FUNC 4 */
-            if (bus->miso_pin == 41) miso_func = 4;
-            /* MOSI: PC6(15) -> FUNC 4 */
-            if (bus->mosi_pin == 15) mosi_func = 4;
-            /* SCLK: PC7(14) -> FUNC 4 */
-            if (bus->sclk_pin == 14) sclk_func = 4;
+#if defined(BSP_SPI1_PIN_FIXED)
+            /* PC5(41), PC6(15), PC7(14) */
+            PORT_Init(PORTC, PIN5, 4, 1);
+            PORT_Init(PORTC, PIN6, 4, 0);
+            PORT_Init(PORTC, PIN7, 4, 0);
+#endif
         }
-
-        PORT_Init(SWM181_PIN_GET_PORT_PTR(bus->miso_pin), SWM181_PIN_GET_PIN_IDX(bus->miso_pin), miso_func, 1);
-        PORT_Init(SWM181_PIN_GET_PORT_PTR(bus->mosi_pin), SWM181_PIN_GET_PIN_IDX(bus->mosi_pin), mosi_func, 0);
-        PORT_Init(SWM181_PIN_GET_PORT_PTR(bus->sclk_pin), SWM181_PIN_GET_PIN_IDX(bus->sclk_pin), sclk_func, 0);
 
         rt_spi_bus_register(&bus->parent, bus->name, &swm181_spi_ops);
     }

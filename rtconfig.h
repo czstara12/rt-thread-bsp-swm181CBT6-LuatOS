@@ -314,9 +314,7 @@
 /* SPI Drivers */
 
 #define BSP_USING_SPI0
-#define BSP_SPI0_MISO_PIN 22
-#define BSP_SPI0_MOSI_PIN 28
-#define BSP_SPI0_SCLK_PIN 29
+#define BSP_SPI0_PIN_GRP_A
 
 /* Onboard Peripheral Drivers */
 
