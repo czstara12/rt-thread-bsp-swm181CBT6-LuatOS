@@ -150,13 +150,21 @@ int rt_hw_spi_init(void)
         uint32_t miso_func = 0, mosi_func = 0, sclk_func = 0;
 
         if (bus->SPIx == SPI0) {
-            if (bus->miso_pin == 9) miso_func = 2; else if (bus->miso_pin == 13) miso_func = 4;
-            if (bus->mosi_pin == 10) mosi_func = 2; else if (bus->mosi_pin == 14) mosi_func = 4;
-            if (bus->sclk_pin == 11) sclk_func = 2; else if (bus->sclk_pin == 15) sclk_func = 4;
+            /* SPI0 物理引脚映射逻辑 (使用板载编号 1-53) */
+            /* MISO: PA9(22) -> FUNC 2, PA13(12) -> FUNC 4 */
+            if (bus->miso_pin == 22) miso_func = 2; else if (bus->miso_pin == 12) miso_func = 4;
+            /* MOSI: PA10(28) -> FUNC 2, PA14(11) -> FUNC 4 */
+            if (bus->mosi_pin == 28) mosi_func = 2; else if (bus->mosi_pin == 11) mosi_func = 4;
+            /* SCLK: PA11(29) -> FUNC 2, PA15(8) -> FUNC 4 */
+            if (bus->sclk_pin == 29) sclk_func = 2; else if (bus->sclk_pin == 8) sclk_func = 4;
         } else {
-            if (bus->miso_pin == 37) miso_func = 4;
-            if (bus->mosi_pin == 38) mosi_func = 4;
-            if (bus->sclk_pin == 39) sclk_func = 4;
+            /* SPI1 物理引脚映射逻辑 */
+            /* MISO: PC5(41) -> FUNC 4 */
+            if (bus->miso_pin == 41) miso_func = 4;
+            /* MOSI: PC6(15) -> FUNC 4 */
+            if (bus->mosi_pin == 15) mosi_func = 4;
+            /* SCLK: PC7(14) -> FUNC 4 */
+            if (bus->sclk_pin == 14) sclk_func = 4;
         }
 
         PORT_Init(SWM181_PIN_GET_PORT_PTR(bus->miso_pin), SWM181_PIN_GET_PIN_IDX(bus->miso_pin), miso_func, 1);

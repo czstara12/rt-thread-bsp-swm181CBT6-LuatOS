@@ -7,11 +7,13 @@
  * Date           Author       Notes
  * 2017-07-24     Tanek        the first version
  * 2018-11-12     Ernest Chen  modify copyright
+ * 2022-02-12     Gemini       optimize memory mapping for 16KB SRAM
  */
 
 #include <stdint.h>
 #include <rthw.h>
 #include <rtthread.h>
+#include "board.h"
 
 #define _SCB_BASE (0xE000E010UL)
 #define _SYSTICK_CTRL (*(rt_uint32_t *)(_SCB_BASE + 0x0))
@@ -20,14 +22,16 @@
 #define _SYSTICK_CALIB (*(rt_uint32_t *)(_SCB_BASE + 0xC))
 #define _SYSTICK_PRI (*(rt_uint8_t *)(0xE000ED23UL))
 
-// Updates the variable SystemCoreClock and must be called
-// whenever the core clock is changed during program execution.
+/* Updates the variable SystemCoreClock and must be called 
+   whenever the core clock is changed during program execution. */
 extern void SystemCoreClockUpdate(void);
 
-// Holds the system core clock, which is the system clock
-// frequency supplied to the SysTick timer and the processor
-// core clock.
+/* Holds the system core clock, which is the system clock 
+   frequency supplied to the SysTick timer and the processor core clock. */
 extern uint32_t SystemCoreClock;
+
+/* SWM181 Standard SystemInit provided by Synwit */
+extern void SystemInit(void);
 
 static uint32_t _SysTick_Config(rt_uint32_t ticks)
 {
@@ -45,16 +49,19 @@ static uint32_t _SysTick_Config(rt_uint32_t ticks)
 }
 
 #if defined(RT_USING_USER_MAIN) && defined(RT_USING_HEAP)
-#define RT_HEAP_SIZE 1024
-static uint32_t rt_heap[RT_HEAP_SIZE]; // heap default size: 4K(1024 * 4)
+/**
+ * These functions are used by the heap management.
+ * HEAP_BEGIN and HEAP_END are defined in board.h to ensure 
+ * enough space for system stack in limited 16KB SRAM.
+ */
 rt_weak void *rt_heap_begin_get(void)
 {
-    return rt_heap;
+    return HEAP_BEGIN;
 }
 
 rt_weak void *rt_heap_end_get(void)
 {
-    return rt_heap + RT_HEAP_SIZE;
+    return HEAP_END;
 }
 #endif
 
@@ -63,23 +70,25 @@ rt_weak void *rt_heap_end_get(void)
  */
 void rt_hw_board_init()
 {
-    /* System Clock Update */
+    /* 1. Explicitly initialize system clock to ensure 48MHz */
+    SystemInit();
     SystemCoreClockUpdate();
 
-    /* System Tick Configuration */
+    /* 2. System Tick Configuration */
     _SysTick_Config(SystemCoreClock / RT_TICK_PER_SECOND);
 
-    /* Call components board initial (use INIT_BOARD_EXPORT()) */
+    /* 3. Call components board initial (use INIT_BOARD_EXPORT()) */
 #ifdef RT_USING_COMPONENTS_INIT
     rt_components_board_init();
 #endif
 
+    /* 4. Initial memory system heap */
 #if defined(RT_USING_USER_MAIN) && defined(RT_USING_HEAP)
     rt_system_heap_init(rt_heap_begin_get(), rt_heap_end_get());
 #endif
 
+    /* 5. Set console device */
 #ifdef RT_USING_CONSOLE
-    /* set console device */
     rt_console_set_device(RT_CONSOLE_DEVICE_NAME);
 #endif
 }

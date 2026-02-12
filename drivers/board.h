@@ -28,7 +28,8 @@ extern int __bss_end;
 #define HEAP_BEGIN ((void *)&__bss_end)
 #endif
 
-#define HEAP_END BOARD_SRAM_END
+/* 堆结束地址：预留 3KB 给系统栈 (2KB) 和 异常处理/冗余 (1KB) */
+#define HEAP_END (void *)(0x20000000 + BOARD_SRAM_SIZE - 3072)
 
 void rt_hw_board_init(void);
 
