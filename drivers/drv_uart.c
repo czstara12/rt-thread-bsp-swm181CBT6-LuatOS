@@ -13,6 +13,7 @@
 #include <rtdevice.h>
 #include "board.h"
 #include "drv_uart.h"
+#include "drv_gpio.h"
 
 #ifdef RT_USING_SERIAL
 
@@ -27,6 +28,8 @@ struct swm181_uart
     IRQn_Type irqn;
     uint32_t periph_irq;
     const char *name;
+    uint32_t rx_pin;
+    uint32_t tx_pin;
 };
 
 static struct swm181_uart_device
@@ -36,29 +39,30 @@ static struct swm181_uart_device
 } uart_obj[] = {
 #ifdef BSP_USING_UART0
     {
-        .uart_info = &(struct swm181_uart){UART0, IRQ0_IRQ, IRQ0_15_UART0, "uart0"},
+        .uart_info = &(struct swm181_uart){UART0, IRQ0_IRQ, IRQ0_15_UART0, "uart0", BSP_UART0_RX_PIN, BSP_UART0_TX_PIN},
     },
 #endif
 #ifdef BSP_USING_UART1
     {
-        .uart_info = &(struct swm181_uart){UART1, IRQ1_IRQ, IRQ0_15_UART1, "uart1"},
+        .uart_info = &(struct swm181_uart){UART1, IRQ1_IRQ, IRQ0_15_UART1, "uart1", BSP_UART1_RX_PIN, BSP_UART1_TX_PIN},
     },
 #endif
 #ifdef BSP_USING_UART2
     {
-        .uart_info = &(struct swm181_uart){UART2, IRQ2_IRQ, IRQ0_15_UART2, "uart2"},
+        .uart_info = &(struct swm181_uart){UART2, IRQ2_IRQ, IRQ0_15_UART2, "uart2", BSP_UART2_RX_PIN, BSP_UART2_TX_PIN},
     },
 #endif
 #ifdef BSP_USING_UART3
     {
-        .uart_info = &(struct swm181_uart){UART3, IRQ3_IRQ, IRQ0_15_UART3, "uart3"},
+        .uart_info = &(struct swm181_uart){UART3, IRQ3_IRQ, IRQ0_15_UART3, "uart3", BSP_UART3_RX_PIN, BSP_UART3_TX_PIN},
     },
 #endif
 };
 
 static rt_err_t swm181_uart_configure(struct rt_serial_device *serial, struct serial_configure *cfg)
 {
-    struct swm181_uart *uart = ((struct swm181_uart_device *)serial)->uart_info;
+    struct swm181_uart_device *uart_dev = (struct swm181_uart_device *)serial->parent.user_data;
+    struct swm181_uart *uart = uart_dev->uart_info;
     UART_InitStructure UART_initStruct;
 
     UART_initStruct.Baudrate = cfg->baud_rate;
@@ -124,7 +128,8 @@ static rt_err_t swm181_uart_configure(struct rt_serial_device *serial, struct se
 
 static rt_err_t swm181_uart_control(struct rt_serial_device *serial, int cmd, void *arg)
 {
-    struct swm181_uart *uart = ((struct swm181_uart_device *)serial)->uart_info;
+    struct swm181_uart_device *uart_dev = (struct swm181_uart_device *)serial->parent.user_data;
+    struct swm181_uart *uart = uart_dev->uart_info;
 
     switch (cmd)
     {
@@ -146,7 +151,8 @@ static rt_err_t swm181_uart_control(struct rt_serial_device *serial, int cmd, vo
 
 static int swm181_uart_putc(struct rt_serial_device *serial, char c)
 {
-    struct swm181_uart *uart = ((struct swm181_uart_device *)serial)->uart_info;
+    struct swm181_uart_device *uart_dev = (struct swm181_uart_device *)serial->parent.user_data;
+    struct swm181_uart *uart = uart_dev->uart_info;
 
     while (UART_IsTXFIFOFull(uart->UARTx));
     UART_WriteByte(uart->UARTx, c);
@@ -156,7 +162,8 @@ static int swm181_uart_putc(struct rt_serial_device *serial, char c)
 
 static int swm181_uart_getc(struct rt_serial_device *serial)
 {
-    struct swm181_uart *uart = ((struct swm181_uart_device *)serial)->uart_info;
+    struct swm181_uart_device *uart_dev = (struct swm181_uart_device *)serial->parent.user_data;
+    struct swm181_uart *uart = uart_dev->uart_info;
     uint32_t data;
 
     if (UART_IsRXFIFOEmpty(uart->UARTx))
@@ -179,7 +186,8 @@ static const struct rt_uart_ops swm181_uart_ops =
 
 static void swm181_uart_isr(struct rt_serial_device *serial)
 {
-    struct swm181_uart *uart = ((struct swm181_uart_device *)serial)->uart_info;
+    struct swm181_uart_device *uart_dev = (struct swm181_uart_device *)serial->parent.user_data;
+    struct swm181_uart *uart = uart_dev->uart_info;
 
     if (UART_INTRXThresholdStat(uart->UARTx) || UART_INTTimeoutStat(uart->UARTx))
     {
@@ -206,7 +214,6 @@ void IRQ0_Handler(void)
 void IRQ1_Handler(void)
 {
     rt_interrupt_enter();
-    /* We need to find the correct index in uart_obj */
     int idx = 0;
 #ifdef BSP_USING_UART0
     idx++;
@@ -256,32 +263,24 @@ int rt_hw_uart_init(void)
     struct serial_configure serial_cfg = RT_SERIAL_CONFIG_DEFAULT;
     int i;
 
-#ifdef BSP_USING_UART0
-    PORT_Init(PORTA, PIN0, FUNMUX_UART0_RXD, 1);
-    PORT_Init(PORTA, PIN1, FUNMUX_UART0_TXD, 0);
-#endif
-#ifdef BSP_USING_UART1
-    PORT_Init(PORTA, PIN10, FUNMUX_UART1_RXD, 1);
-    PORT_Init(PORTA, PIN11, FUNMUX_UART1_TXD, 0);
-#endif
-#ifdef BSP_USING_UART2
-    PORT_Init(PORTB, PIN10, FUNMUX_UART2_RXD, 1);
-    PORT_Init(PORTB, PIN11, FUNMUX_UART2_TXD, 0);
-#endif
-#ifdef BSP_USING_UART3
-    PORT_Init(PORTC, PIN10, FUNMUX_UART3_RXD, 1);
-    PORT_Init(PORTC, PIN11, FUNMUX_UART3_TXD, 0);
-#endif
-
     for (i = 0; i < sizeof(uart_obj) / sizeof(uart_obj[0]); i++)
     {
+        struct swm181_uart *info = uart_obj[i].uart_info;
+        uint32_t rx_func = 0, tx_func = 0;
+
+        if (info->UARTx == UART0) { rx_func = FUNMUX_UART0_RXD; tx_func = FUNMUX_UART0_TXD; }
+        else if (info->UARTx == UART1) { rx_func = FUNMUX_UART1_RXD; tx_func = FUNMUX_UART1_TXD; }
+        else if (info->UARTx == UART2) { rx_func = FUNMUX_UART2_RXD; tx_func = FUNMUX_UART2_TXD; }
+        else if (info->UARTx == UART3) { rx_func = FUNMUX_UART3_RXD; tx_func = FUNMUX_UART3_TXD; }
+
+        PORT_Init(SWM181_PIN_GET_PORT_PTR(info->rx_pin), SWM181_PIN_GET_PIN_IDX(info->rx_pin), rx_func, 1);
+        PORT_Init(SWM181_PIN_GET_PORT_PTR(info->tx_pin), SWM181_PIN_GET_PIN_IDX(info->tx_pin), tx_func, 0);
+
         uart_obj[i].serial.ops = &swm181_uart_ops;
         uart_obj[i].serial.config = serial_cfg;
 
-        rt_hw_serial_register(&uart_obj[i].serial,
-                                uart_obj[i].uart_info->name,
-                                RT_DEVICE_FLAG_RDWR | RT_DEVICE_FLAG_INT_RX,
-                                &uart_obj[i]);
+        rt_hw_serial_register(&uart_obj[i].serial, info->name,
+                                RT_DEVICE_FLAG_RDWR | RT_DEVICE_FLAG_INT_RX, &uart_obj[i]);
     }
 
     return 0;

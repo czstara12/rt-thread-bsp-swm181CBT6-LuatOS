@@ -86,10 +86,9 @@
 #define RT_USING_I2C
 #define RT_USING_SPI
 #define RT_USING_PWM
+#define RT_USING_CAN
 #define RT_USING_WDT
 #define RT_USING_RTC
-#define RT_USING_HWTIMER
-#define RT_USING_CAN
 
 /* Using USB */
 
@@ -289,36 +288,39 @@
 /* UART Drivers */
 
 #define BSP_USING_UART0
+#define BSP_UART0_RX_PIN 30
+#define BSP_UART0_TX_PIN 31
 
-#define BSP_USING_ADC
-
-#define BSP_USING_I2C0
-#define BSP_USING_I2C1
-
-#define BSP_USING_PWM0
-#define BSP_USING_PWM1
-
-#define BSP_USING_SPI0
-#define BSP_USING_SPI1
-
-#define BSP_USING_WDT
-
-#define BSP_USING_RTC
-
-/* HWtimer Drivers */
-
-#define BSP_USING_HWTIMER0
-#define BSP_USING_HWTIMER1
+#define BSP_USING_UART1
+#define BSP_UART1_RX_PIN 28
+#define BSP_UART1_TX_PIN 29
 
 /* I2C Drivers */
 
-#define BSP_USING_CAN
+#define BSP_USING_I2C0
+#define BSP_I2C0_SCL_PIN 13
+#define BSP_I2C0_SDA_PIN 12
 
 /* PWM Drivers */
 
+#define BSP_USING_PWM0
+#define BSP_PWM0_CH1_PIN 21
+#define BSP_PWM0_CH2_PIN 22
 
 /* SPI Drivers */
 
+#define BSP_USING_SPI0
+#define BSP_SPI0_MISO_PIN 22
+#define BSP_SPI0_MOSI_PIN 28
+#define BSP_SPI0_SCLK_PIN 29
+
+#define BSP_USING_CAN
+#define BSP_CAN_RX_PIN 13
+#define BSP_CAN_TX_PIN 12
+
+#define BSP_USING_ADC
+#define BSP_USING_WDT
+#define BSP_USING_RTC
 
 /* Onboard Peripheral Drivers */
 

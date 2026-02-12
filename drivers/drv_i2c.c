@@ -12,6 +12,7 @@
 #include <rtthread.h>
 #include <board.h>
 #include "drv_i2c.h"
+#include "drv_gpio.h"
 
 #ifdef RT_USING_I2C
 
@@ -24,6 +25,8 @@ struct swm181_i2c_bus
     struct rt_i2c_bus_device parent;
     I2C_TypeDef *I2Cx;
     const char *name;
+    uint32_t scl_pin;
+    uint32_t sda_pin;
 };
 
 static rt_ssize_t swm181_i2c_master_xfer(struct rt_i2c_bus_device *bus, struct rt_i2c_msg msgs[], rt_uint32_t num)
@@ -97,10 +100,10 @@ static const struct rt_i2c_bus_device_ops swm181_i2c_ops =
 
 static struct swm181_i2c_bus i2c_objs[] = {
 #ifdef BSP_USING_I2C0
-    { .I2Cx = I2C0, .name = "i2c0" },
+    { .I2Cx = I2C0, .name = "i2c0", .scl_pin = BSP_I2C0_SCL_PIN, .sda_pin = BSP_I2C0_SDA_PIN },
 #endif
 #ifdef BSP_USING_I2C1
-    { .I2Cx = I2C1, .name = "i2c1" },
+    { .I2Cx = I2C1, .name = "i2c1", .scl_pin = BSP_I2C1_SCL_PIN, .sda_pin = BSP_I2C1_SDA_PIN },
 #endif
 };
 
@@ -122,21 +125,19 @@ int rt_hw_i2c_init(void)
     init_struct.SlvRdReqIEn = 0;
     init_struct.SlvWrReqIEn = 0;
 
-#ifdef BSP_USING_I2C0
-    PORT_Init(PORTA, PIN12, FUNMUX_I2C0_SCL, 1);
-    PORT_Init(PORTA, PIN13, FUNMUX_I2C0_SDA, 1);
-#endif
-#ifdef BSP_USING_I2C1
-    PORT_Init(PORTB, PIN10, FUNMUX_I2C1_SCL, 1);
-    PORT_Init(PORTB, PIN11, FUNMUX_I2C1_SDA, 1);
-#endif
-
     for (i = 0; i < sizeof(i2c_objs) / sizeof(i2c_objs[0]); i++)
     {
-        i2c_objs[i].parent.ops = &swm181_i2c_ops;
-        I2C_Init(i2c_objs[i].I2Cx, &init_struct);
-        I2C_Open(i2c_objs[i].I2Cx);
-        rt_i2c_bus_device_register(&i2c_objs[i].parent, i2c_objs[i].name);
+        struct swm181_i2c_bus *bus = &i2c_objs[i];
+        uint32_t scl_func = (bus->I2Cx == I2C0) ? FUNMUX_I2C0_SCL : FUNMUX_I2C1_SCL;
+        uint32_t sda_func = (bus->I2Cx == I2C0) ? FUNMUX_I2C0_SDA : FUNMUX_I2C1_SDA;
+
+        PORT_Init(SWM181_PIN_GET_PORT_PTR(bus->scl_pin), SWM181_PIN_GET_PIN_IDX(bus->scl_pin), scl_func, 1);
+        PORT_Init(SWM181_PIN_GET_PORT_PTR(bus->sda_pin), SWM181_PIN_GET_PIN_IDX(bus->sda_pin), sda_func, 1);
+
+        bus->parent.ops = &swm181_i2c_ops;
+        I2C_Init(bus->I2Cx, &init_struct);
+        I2C_Open(bus->I2Cx);
+        rt_i2c_bus_device_register(&bus->parent, bus->name);
     }
 
     return 0;

@@ -3,8 +3,10 @@
 #include "board.h"
 #include "drv_gpio.h"
 
-/* 定义测试引脚 (根据 drv_gpio.c 的 GET_PIN 宏) */
-#define LED0_PIN GET_PIN(B, 8)
+/* 定义测试引脚 (使用板载物理引脚编号) */
+#define LED0_PIN 51  /* PB8 */
+#define LED1_PIN 52  /* PB9 */
+#define LED2_PIN 53  /* PD0 */
 
 /* 外设设备名称 */
 #define ADC_DEV_NAME        "adc0"

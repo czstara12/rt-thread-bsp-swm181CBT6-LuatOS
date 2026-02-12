@@ -12,6 +12,7 @@
 #include <rtthread.h>
 #include <board.h>
 #include "drv_pwm.h"
+#include "drv_gpio.h"
 
 #ifdef RT_USING_PWM
 
@@ -20,6 +21,8 @@ struct swm181_pwm
     struct rt_device_pwm parent;
     PWM_TypeDef *PWMx;
     const char *name;
+    uint32_t ch1_pin;
+    uint32_t ch2_pin;
 };
 
 static rt_uint8_t swm181_pwm_clkdiv(rt_uint32_t pwm_clk, rt_uint32_t period_ns, rt_uint16_t *cycle)
@@ -51,7 +54,7 @@ static rt_uint8_t swm181_pwm_clkdiv(rt_uint32_t pwm_clk, rt_uint32_t period_ns, 
 
 static rt_err_t swm181_pwm_control(struct rt_device_pwm *device, int cmd, void *arg)
 {
-    struct swm181_pwm *pwm = (struct swm181_pwm *)device;
+    struct swm181_pwm *pwm = (struct swm181_pwm *)device->parent.user_data;
     struct rt_pwm_configuration *cfg = (struct rt_pwm_configuration *)arg;
     rt_uint32_t chn;
     
@@ -110,16 +113,16 @@ static const struct rt_pwm_ops swm181_pwm_ops =
 
 static struct swm181_pwm pwm_objs[] = {
 #ifdef BSP_USING_PWM0
-    { .PWMx = PWM0, .name = "pwm0" },
+    { .PWMx = PWM0, .name = "pwm0", .ch1_pin = BSP_PWM0_CH1_PIN, .ch2_pin = BSP_PWM0_CH2_PIN },
 #endif
 #ifdef BSP_USING_PWM1
-    { .PWMx = PWM1, .name = "pwm1" },
+    { .PWMx = PWM1, .name = "pwm1", .ch1_pin = BSP_PWM1_CH1_PIN, .ch2_pin = BSP_PWM1_CH2_PIN },
 #endif
 #ifdef BSP_USING_PWM2
-    { .PWMx = PWM2, .name = "pwm2" },
+    { .PWMx = PWM2, .name = "pwm2", .ch1_pin = BSP_PWM2_CH1_PIN, .ch2_pin = BSP_PWM2_CH2_PIN },
 #endif
 #ifdef BSP_USING_PWM3
-    { .PWMx = PWM3, .name = "pwm3" },
+    { .PWMx = PWM3, .name = "pwm3", .ch1_pin = BSP_PWM3_CH1_PIN, .ch2_pin = BSP_PWM3_CH2_PIN },
 #endif
 };
 
@@ -143,27 +146,21 @@ int rt_hw_pwm_init(void)
     init_struct.HEndBIEn = 0;
     init_struct.NCycleBIEn = 0;
 
-#ifdef BSP_USING_PWM0
-    PORT_Init(PORTA, PIN8, FUNMUX_PWM0A_OUT, 0);
-    PORT_Init(PORTA, PIN9, FUNMUX_PWM0B_OUT, 0);
-#endif
-#ifdef BSP_USING_PWM1
-    PORT_Init(PORTB, PIN6, FUNMUX_PWM1A_OUT, 0);
-    PORT_Init(PORTB, PIN7, FUNMUX_PWM1B_OUT, 0);
-#endif
-#ifdef BSP_USING_PWM2
-    PORT_Init(PORTA, PIN12, FUNMUX_PWM2A_OUT, 0);
-    PORT_Init(PORTA, PIN13, FUNMUX_PWM2B_OUT, 0);
-#endif
-#ifdef BSP_USING_PWM3
-    PORT_Init(PORTB, PIN14, FUNMUX_PWM3A_OUT, 0);
-    PORT_Init(PORTB, PIN15, FUNMUX_PWM3B_OUT, 0);
-#endif
-
     for (i = 0; i < sizeof(pwm_objs) / sizeof(pwm_objs[0]); i++)
     {
-        PWM_Init(pwm_objs[i].PWMx, &init_struct);
-        rt_device_pwm_register(&pwm_objs[i].parent, pwm_objs[i].name, &swm181_pwm_ops, &pwm_objs[i]);
+        struct swm181_pwm *pwm = &pwm_objs[i];
+        uint32_t funcA = 0, funcB = 0;
+
+        if (pwm->PWMx == PWM0) { funcA = FUNMUX_PWM0A_OUT; funcB = FUNMUX_PWM0B_OUT; }
+        else if (pwm->PWMx == PWM1) { funcA = FUNMUX_PWM1A_OUT; funcB = FUNMUX_PWM1B_OUT; }
+        else if (pwm->PWMx == PWM2) { funcA = FUNMUX_PWM2A_OUT; funcB = FUNMUX_PWM2B_OUT; }
+        else if (pwm->PWMx == PWM3) { funcA = FUNMUX_PWM3A_OUT; funcB = FUNMUX_PWM3B_OUT; }
+
+        PORT_Init(SWM181_PIN_GET_PORT_PTR(pwm->ch1_pin), SWM181_PIN_GET_PIN_IDX(pwm->ch1_pin), funcA, 0);
+        PORT_Init(SWM181_PIN_GET_PORT_PTR(pwm->ch2_pin), SWM181_PIN_GET_PIN_IDX(pwm->ch2_pin), funcB, 0);
+
+        PWM_Init(pwm->PWMx, &init_struct);
+        rt_device_pwm_register(&pwm->parent, pwm->name, &swm181_pwm_ops, pwm);
     }
 
     return 0;

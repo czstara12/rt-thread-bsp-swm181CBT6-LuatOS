@@ -12,6 +12,7 @@
 #include <rtdevice.h>
 #include <board.h>
 #include "drv_spi.h"
+#include "drv_gpio.h"
 
 #ifdef RT_USING_SPI
 
@@ -24,6 +25,9 @@ struct swm181_spi_bus
     struct rt_spi_bus parent;
     SPI_TypeDef *SPIx;
     const char *name;
+    uint32_t miso_pin;
+    uint32_t mosi_pin;
+    uint32_t sclk_pin;
 };
 
 static rt_uint8_t swm181_spi_clkdiv(rt_uint32_t max_hz)
@@ -129,10 +133,10 @@ static const struct rt_spi_ops swm181_spi_ops =
 
 static struct swm181_spi_bus spi_objs[] = {
 #ifdef BSP_USING_SPI0
-    { .SPIx = SPI0, .name = "spi0" },
+    { .SPIx = SPI0, .name = "spi0", .miso_pin = BSP_SPI0_MISO_PIN, .mosi_pin = BSP_SPI0_MOSI_PIN, .sclk_pin = BSP_SPI0_SCLK_PIN },
 #endif
 #ifdef BSP_USING_SPI1
-    { .SPIx = SPI1, .name = "spi1" },
+    { .SPIx = SPI1, .name = "spi1", .miso_pin = BSP_SPI1_MISO_PIN, .mosi_pin = BSP_SPI1_MOSI_PIN, .sclk_pin = BSP_SPI1_SCLK_PIN },
 #endif
 };
 
@@ -140,20 +144,26 @@ int rt_hw_spi_init(void)
 {
     int i;
 
-#ifdef BSP_USING_SPI0
-    PORT_Init(PORTA, PIN9,  PORTA_PIN9_SPI0_MISO, 1);
-    PORT_Init(PORTA, PIN10, PORTA_PIN10_SPI0_MOSI, 0);
-    PORT_Init(PORTA, PIN11, PORTA_PIN11_SPI0_SCLK, 0);
-#endif
-#ifdef BSP_USING_SPI1
-    PORT_Init(PORTC, PIN5, PORTC_PIN5_SPI1_MISO, 1);
-    PORT_Init(PORTC, PIN6, PORTC_PIN6_SPI1_MOSI, 0);
-    PORT_Init(PORTC, PIN7, PORTC_PIN7_SPI1_SCLK, 0);
-#endif
-
     for (i = 0; i < sizeof(spi_objs) / sizeof(spi_objs[0]); i++)
     {
-        rt_spi_bus_register(&spi_objs[i].parent, spi_objs[i].name, &swm181_spi_ops);
+        struct swm181_spi_bus *bus = &spi_objs[i];
+        uint32_t miso_func = 0, mosi_func = 0, sclk_func = 0;
+
+        if (bus->SPIx == SPI0) {
+            if (bus->miso_pin == 9) miso_func = 2; else if (bus->miso_pin == 13) miso_func = 4;
+            if (bus->mosi_pin == 10) mosi_func = 2; else if (bus->mosi_pin == 14) mosi_func = 4;
+            if (bus->sclk_pin == 11) sclk_func = 2; else if (bus->sclk_pin == 15) sclk_func = 4;
+        } else {
+            if (bus->miso_pin == 37) miso_func = 4;
+            if (bus->mosi_pin == 38) mosi_func = 4;
+            if (bus->sclk_pin == 39) sclk_func = 4;
+        }
+
+        PORT_Init(SWM181_PIN_GET_PORT_PTR(bus->miso_pin), SWM181_PIN_GET_PIN_IDX(bus->miso_pin), miso_func, 1);
+        PORT_Init(SWM181_PIN_GET_PORT_PTR(bus->mosi_pin), SWM181_PIN_GET_PIN_IDX(bus->mosi_pin), mosi_func, 0);
+        PORT_Init(SWM181_PIN_GET_PORT_PTR(bus->sclk_pin), SWM181_PIN_GET_PIN_IDX(bus->sclk_pin), sclk_func, 0);
+
+        rt_spi_bus_register(&bus->parent, bus->name, &swm181_spi_ops);
     }
 
     return 0;

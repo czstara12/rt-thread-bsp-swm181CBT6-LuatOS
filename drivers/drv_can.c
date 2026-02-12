@@ -12,6 +12,7 @@
 #include <rtthread.h>
 #include "board.h"
 #include "drv_can.h"
+#include "drv_gpio.h"
 
 #ifdef RT_USING_CAN
 
@@ -84,7 +85,6 @@ static rt_err_t swm181_can_control(struct rt_can_device *can, int cmd, void *arg
     {
         struct rt_can_filter_config *filter_cfg = (struct rt_can_filter_config *)arg;
         CAN_Close(swm_can->CANx);
-        // SWM181 only has one 32-bit filter or two 16-bit filters in this simple driver
         if (filter_cfg->count > 0)
         {
             CAN_SetFilter32b(swm_can->CANx, filter_cfg->items[0].id, filter_cfg->items[0].mask);
@@ -159,8 +159,8 @@ int rt_hw_can_init(void)
     can_obj.CANx = CAN;
     can_obj.name = "can1";
 
-    PORT_Init(PORTA, PIN12, FUNMUX_CAN_RX, 1);
-    PORT_Init(PORTA, PIN13, FUNMUX_CAN_TX, 0);
+    PORT_Init(SWM181_PIN_GET_PORT_PTR(BSP_CAN_RX_PIN), SWM181_PIN_GET_PIN_IDX(BSP_CAN_RX_PIN), FUNMUX_CAN_RX, 1);
+    PORT_Init(SWM181_PIN_GET_PORT_PTR(BSP_CAN_TX_PIN), SWM181_PIN_GET_PIN_IDX(BSP_CAN_TX_PIN), FUNMUX_CAN_TX, 0);
 
     return rt_hw_can_register(&can_obj.parent, can_obj.name, &swm181_can_ops, RT_NULL);
 }
