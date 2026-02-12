@@ -8,7 +8,7 @@
 
 ```sh
 # 快速开始
-git clone -b v5.1.0 https://github.com/RT-Thread/rt-thread.git
+git clone -b v5.1.x https://github.com/RT-Thread/rt-thread.git
 git clone https://github.com/czstara12/rt-thread-bsp-swm181CBT6-LuatOS.git rt-thread/bsp/synwit/swm181CBT6-LuatOS
 cd bsp/synwit/swm181CBT6-LuatOS
 scons --target=mdk5
