@@ -59,7 +59,9 @@ export RTT_ROOT=[RTT仓库路径]
 
 当使用 [env工具](https://www.rt-thread.org/page/download.html) 正确编译产生出rtthread.bin映像文件后，可以使用 ISP 的方式来烧写到设备中。
 
-**建议使用 keil 软件直接下载**。ISP 下载较复杂。
+**建议使用 keil 软件直接下载**。
+
+已知问题 mac OS疑似无法擦除flash 有时侯行 大部分时候不可用
 
 ### 运行结果
 
