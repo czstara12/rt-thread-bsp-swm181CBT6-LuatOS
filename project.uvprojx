@@ -334,9 +334,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls />
-              <Define>RT_USING_ARMLIBC, __CLK_TCK=RT_TICK_PER_SECOND, __STDC_LIMIT_MACROS, RT_USING_LIBC, __RTTHREAD__</Define>
+              <Define>RT_USING_ARMLIBC, __CLK_TCK=RT_TICK_PER_SECOND, __RTTHREAD__, __STDC_LIMIT_MACROS, RT_USING_LIBC</Define>
               <Undefine />
-              <IncludePath>../../../components/libc/posix/io/epoll;../../../components/drivers/include;../../../components/drivers/include;../../../libcpu/arm/common;drivers;../../../components/drivers/include;../../../components/drivers/include;../../../components/drivers/include;../../../components/libc/posix/io/poll;../../../components/libc/posix/io/eventfd;.;../../../components/libc/compilers/common/extension/fcntl/octal;applications;../../../components/drivers/include;../../../components/finsh;libraries/CMSIS/DeviceSupport;../../../components/drivers/spi;libraries/SWM181_StdPeriph_Driver;../../../components/drivers/include;../../../components/drivers/include;../../../components/libc/compilers/common/extension;../../../components/libc/compilers/common/include;../../../components/drivers/include;../../../include;libraries/CMSIS/CoreSupport;../../../components/drivers/include;../../../components/libc/posix/ipc;../../../libcpu/arm/cortex-m0</IncludePath>
+              <IncludePath>../../../components/drivers/spi;../../../components/libc/compilers/common/extension/fcntl/octal;../../../components/drivers/include;../../../components/drivers/include;../../../components/drivers/include;libraries/SWM181_StdPeriph_Driver;../../../components/libc/posix/ipc;.;libraries/CMSIS/CoreSupport;applications;../../../libcpu/arm/common;../../../libcpu/arm/cortex-m0;../../../components/libc/compilers/common/include;../../../components/drivers/include;../../../components/drivers/include;drivers;../../../components/finsh;../../../components/libc/posix/io/poll;../../../components/drivers/include;../../../components/drivers/include;../../../components/drivers/include;libraries/CMSIS/DeviceSupport;../../../include;../../../components/drivers/include;../../../components/drivers/include;../../../components/libc/compilers/common/extension;../../../components/libc/posix/io/eventfd;../../../components/libc/posix/io/epoll</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -852,27 +852,6 @@
           <GroupName>Drivers</GroupName>
           <Files>
             <File>
-              <FileName>drv_gpio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>drivers/drv_gpio.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
-              <FileName>board.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>drivers/board.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
-              <FileName>drv_can.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>drivers/drv_can.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
               <FileName>drv_rtc.c</FileName>
               <FileType>1</FileType>
               <FilePath>drivers/drv_rtc.c</FilePath>
@@ -880,30 +859,9 @@
           </Files>
           <Files>
             <File>
-              <FileName>drv_spi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>drivers/drv_spi.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
               <FileName>drv_wdt.c</FileName>
               <FileType>1</FileType>
               <FilePath>drivers/drv_wdt.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
-              <FileName>drv_i2c.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>drivers/drv_i2c.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
-              <FileName>drv_uart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>drivers/drv_uart.c</FilePath>
             </File>
           </Files>
           <Files>
@@ -920,14 +878,56 @@
               <FilePath>drivers/drv_pwm.c</FilePath>
             </File>
           </Files>
+          <Files>
+            <File>
+              <FileName>drv_uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>drivers/drv_uart.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
+              <FileName>drv_can.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>drivers/drv_can.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
+              <FileName>drv_gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>drivers/drv_gpio.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
+              <FileName>board.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>drivers/board.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
+              <FileName>drv_spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>drivers/drv_spi.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
+              <FileName>drv_i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>drivers/drv_i2c.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>Finsh</GroupName>
           <Files>
             <File>
-              <FileName>msh.c</FileName>
+              <FileName>cmd.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../../../components/finsh/msh.c</FilePath>
+              <FilePath>../../../components/finsh/cmd.c</FilePath>
             </File>
           </Files>
           <Files>
@@ -939,16 +939,16 @@
           </Files>
           <Files>
             <File>
-              <FileName>cmd.c</FileName>
+              <FileName>shell.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../../../components/finsh/cmd.c</FilePath>
+              <FilePath>../../../components/finsh/shell.c</FilePath>
             </File>
           </Files>
           <Files>
             <File>
-              <FileName>shell.c</FileName>
+              <FileName>msh.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../../../components/finsh/shell.c</FilePath>
+              <FilePath>../../../components/finsh/msh.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1275,16 +1275,16 @@
           <GroupName>Libraries</GroupName>
           <Files>
             <File>
-              <FileName>system_SWM181.c</FileName>
+              <FileName>SWM181_uart.c</FileName>
               <FileType>1</FileType>
-              <FilePath>libraries/CMSIS/DeviceSupport/system_SWM181.c</FilePath>
+              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_uart.c</FilePath>
             </File>
           </Files>
           <Files>
             <File>
-              <FileName>SWM181_cordic.c</FileName>
+              <FileName>SWM181_sdadc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_cordic.c</FilePath>
+              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_sdadc.c</FilePath>
             </File>
           </Files>
           <Files>
@@ -1296,6 +1296,20 @@
           </Files>
           <Files>
             <File>
+              <FileName>SWM181_cordic.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_cordic.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
+              <FileName>SWM181_sleep.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_sleep.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
               <FileName>SWM181_wdt.c</FileName>
               <FileType>1</FileType>
               <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_wdt.c</FilePath>
@@ -1303,16 +1317,30 @@
           </Files>
           <Files>
             <File>
-              <FileName>SWM181_spi.c</FileName>
+              <FileName>SWM181_irqmux.c</FileName>
               <FileType>1</FileType>
-              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_spi.c</FilePath>
+              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_irqmux.c</FilePath>
             </File>
           </Files>
           <Files>
             <File>
-              <FileName>SWM181_pwm.c</FileName>
+              <FileName>SWM181_dma.c</FileName>
               <FileType>1</FileType>
-              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_pwm.c</FilePath>
+              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_dma.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
+              <FileName>SWM181_cache.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_cache.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
+              <FileName>startup_SWM181.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>libraries/CMSIS/DeviceSupport/startup/arm/startup_SWM181.s</FilePath>
             </File>
           </Files>
           <Files>
@@ -1324,9 +1352,65 @@
           </Files>
           <Files>
             <File>
+              <FileName>SWM181_pwm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_pwm.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
+              <FileName>SWM181_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_flash.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
+              <FileName>SWM181_cmp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_cmp.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
+              <FileName>system_SWM181.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>libraries/CMSIS/DeviceSupport/system_SWM181.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
+              <FileName>SWM181_slcd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_slcd.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
               <FileName>SWM181_i2c.c</FileName>
               <FileType>1</FileType>
               <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_i2c.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
+              <FileName>SWM181_div.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_div.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
+              <FileName>SWM181_adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_adc.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
+              <FileName>SWM181_spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_spi.c</FilePath>
             </File>
           </Files>
           <Files>
@@ -1345,93 +1429,9 @@
           </Files>
           <Files>
             <File>
-              <FileName>SWM181_sdadc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_sdadc.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
               <FileName>SWM181_can.c</FileName>
               <FileType>1</FileType>
               <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_can.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
-              <FileName>startup_SWM181.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>libraries/CMSIS/DeviceSupport/startup/arm/startup_SWM181.s</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
-              <FileName>SWM181_adc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_adc.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
-              <FileName>SWM181_slcd.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_slcd.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
-              <FileName>SWM181_sleep.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_sleep.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
-              <FileName>SWM181_uart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_uart.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
-              <FileName>SWM181_irqmux.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_irqmux.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
-              <FileName>SWM181_cache.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_cache.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
-              <FileName>SWM181_flash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_flash.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
-              <FileName>SWM181_div.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_div.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
-              <FileName>SWM181_dma.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_dma.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
-              <FileName>SWM181_cmp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>libraries/SWM181_StdPeriph_Driver/SWM181_cmp.c</FilePath>
             </File>
           </Files>
         </Group>
