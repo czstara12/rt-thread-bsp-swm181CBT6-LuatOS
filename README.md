@@ -66,8 +66,8 @@ export RTT_ROOT=[RTT仓库路径]
 ```
  \ | /
 - RT -     Thread Operating System
- / | \     5.3.0 build Feb 12 2026
- 2006 - 2024 Copyright by RT-Thread team
+ / | \     x.x.x build [date]
+ 2006 - 202x Copyright by rt-thread team
 msh >
 ```
 ## 外设支持
