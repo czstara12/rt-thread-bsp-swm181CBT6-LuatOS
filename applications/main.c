@@ -3,10 +3,10 @@
 #include "board.h"
 #include "drv_gpio.h"
 
-/* 定义测试引脚 (使用板载物理引脚编号) */
-#define LED0_PIN 51  /* PB8 */
-#define LED1_PIN 52  /* PB9 */
-#define LED2_PIN 53  /* PD0 */
+/* 定义测试引脚 (统一使用 MCU Pin Index 编码) */
+#define LED0_PIN GET_PIN(B, 8)
+#define LED1_PIN GET_PIN(B, 9)
+#define LED2_PIN GET_PIN(D, 0)
 
 /* 外设设备名称 */
 #define ADC_DEV_NAME        "adc0"
@@ -25,6 +25,9 @@ int main(void)
     rt_pin_mode(LED0_PIN, PIN_MODE_OUTPUT);
     rt_pin_mode(LED1_PIN, PIN_MODE_OUTPUT);
     rt_pin_mode(LED2_PIN, PIN_MODE_OUTPUT);
+    rt_pin_write(LED0_PIN, PIN_LOW);
+    rt_pin_write(LED1_PIN, PIN_LOW);
+    rt_pin_write(LED2_PIN, PIN_LOW);
     rt_kprintf("SWM181 BSP Driver Test Start...\n");
 
     /* 1. UART 测试 (UART1) */
