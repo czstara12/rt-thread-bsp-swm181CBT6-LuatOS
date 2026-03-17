@@ -25,8 +25,8 @@ struct swm181_i2c_bus
     struct rt_i2c_bus_device parent;
     I2C_TypeDef *I2Cx;
     const char *name;
-    uint32_t scl_pin;
-    uint32_t sda_pin;
+    const char *scl_pin_name;
+    const char *sda_pin_name;
 };
 
 static rt_ssize_t swm181_i2c_master_xfer(struct rt_i2c_bus_device *bus, struct rt_i2c_msg msgs[], rt_uint32_t num)
@@ -100,10 +100,10 @@ static const struct rt_i2c_bus_device_ops swm181_i2c_ops =
 
 static struct swm181_i2c_bus i2c_objs[] = {
 #ifdef BSP_USING_I2C0
-    { .I2Cx = I2C0, .name = "i2c0", .scl_pin = BSP_I2C0_SCL_PIN, .sda_pin = BSP_I2C0_SDA_PIN },
+    { .I2Cx = I2C0, .name = "i2c0", .scl_pin_name = BSP_I2C0_SCL_PIN, .sda_pin_name = BSP_I2C0_SDA_PIN },
 #endif
 #ifdef BSP_USING_I2C1
-    { .I2Cx = I2C1, .name = "i2c1", .scl_pin = BSP_I2C1_SCL_PIN, .sda_pin = BSP_I2C1_SDA_PIN },
+    { .I2Cx = I2C1, .name = "i2c1", .scl_pin_name = BSP_I2C1_SCL_PIN, .sda_pin_name = BSP_I2C1_SDA_PIN },
 #endif
 };
 
@@ -128,11 +128,21 @@ int rt_hw_i2c_init(void)
     for (i = 0; i < sizeof(i2c_objs) / sizeof(i2c_objs[0]); i++)
     {
         struct swm181_i2c_bus *bus = &i2c_objs[i];
+        rt_base_t scl_pin;
+        rt_base_t sda_pin;
         uint32_t scl_func = (bus->I2Cx == I2C0) ? FUNMUX_I2C0_SCL : FUNMUX_I2C1_SCL;
         uint32_t sda_func = (bus->I2Cx == I2C0) ? FUNMUX_I2C0_SDA : FUNMUX_I2C1_SDA;
 
-        PORT_Init(SWM181_PIN_GET_PORT_PTR(bus->scl_pin), SWM181_PIN_GET_PIN_IDX(bus->scl_pin), scl_func, 1);
-        PORT_Init(SWM181_PIN_GET_PORT_PTR(bus->sda_pin), SWM181_PIN_GET_PIN_IDX(bus->sda_pin), sda_func, 1);
+        scl_pin = rt_pin_get(bus->scl_pin_name);
+        sda_pin = rt_pin_get(bus->sda_pin_name);
+        if (scl_pin < 0 || sda_pin < 0)
+        {
+            rt_kprintf("i2c pin lookup failed: %s scl=%s sda=%s\n", bus->name, bus->scl_pin_name, bus->sda_pin_name);
+            continue;
+        }
+
+        PORT_Init(SWM181_PIN_GET_PORT_PTR(scl_pin), SWM181_PIN_GET_PIN_IDX(scl_pin), scl_func, 1);
+        PORT_Init(SWM181_PIN_GET_PORT_PTR(sda_pin), SWM181_PIN_GET_PIN_IDX(sda_pin), sda_func, 1);
 
         bus->parent.ops = &swm181_i2c_ops;
         I2C_Init(bus->I2Cx, &init_struct);

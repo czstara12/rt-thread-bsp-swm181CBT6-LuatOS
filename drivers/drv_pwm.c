@@ -21,8 +21,8 @@ struct swm181_pwm
     struct rt_device_pwm parent;
     PWM_TypeDef *PWMx;
     const char *name;
-    uint32_t ch1_pin;
-    uint32_t ch2_pin;
+    const char *ch1_pin_name;
+    const char *ch2_pin_name;
 };
 
 static rt_uint8_t swm181_pwm_clkdiv(rt_uint32_t pwm_clk, rt_uint32_t period_ns, rt_uint16_t *cycle)
@@ -113,16 +113,16 @@ static const struct rt_pwm_ops swm181_pwm_ops =
 
 static struct swm181_pwm pwm_objs[] = {
 #ifdef BSP_USING_PWM0
-    { .PWMx = PWM0, .name = "pwm0", .ch1_pin = BSP_PWM0_CH1_PIN, .ch2_pin = BSP_PWM0_CH2_PIN },
+    { .PWMx = PWM0, .name = "pwm0", .ch1_pin_name = BSP_PWM0_CH1_PIN, .ch2_pin_name = BSP_PWM0_CH2_PIN },
 #endif
 #ifdef BSP_USING_PWM1
-    { .PWMx = PWM1, .name = "pwm1", .ch1_pin = BSP_PWM1_CH1_PIN, .ch2_pin = BSP_PWM1_CH2_PIN },
+    { .PWMx = PWM1, .name = "pwm1", .ch1_pin_name = BSP_PWM1_CH1_PIN, .ch2_pin_name = BSP_PWM1_CH2_PIN },
 #endif
 #ifdef BSP_USING_PWM2
-    { .PWMx = PWM2, .name = "pwm2", .ch1_pin = BSP_PWM2_CH1_PIN, .ch2_pin = BSP_PWM2_CH2_PIN },
+    { .PWMx = PWM2, .name = "pwm2", .ch1_pin_name = BSP_PWM2_CH1_PIN, .ch2_pin_name = BSP_PWM2_CH2_PIN },
 #endif
 #ifdef BSP_USING_PWM3
-    { .PWMx = PWM3, .name = "pwm3", .ch1_pin = BSP_PWM3_CH1_PIN, .ch2_pin = BSP_PWM3_CH2_PIN },
+    { .PWMx = PWM3, .name = "pwm3", .ch1_pin_name = BSP_PWM3_CH1_PIN, .ch2_pin_name = BSP_PWM3_CH2_PIN },
 #endif
 };
 
@@ -149,6 +149,8 @@ int rt_hw_pwm_init(void)
     for (i = 0; i < sizeof(pwm_objs) / sizeof(pwm_objs[0]); i++)
     {
         struct swm181_pwm *pwm = &pwm_objs[i];
+        rt_base_t ch1_pin;
+        rt_base_t ch2_pin;
         uint32_t funcA = 0, funcB = 0;
 
         if (pwm->PWMx == PWM0) { funcA = FUNMUX_PWM0A_OUT; funcB = FUNMUX_PWM0B_OUT; }
@@ -156,8 +158,16 @@ int rt_hw_pwm_init(void)
         else if (pwm->PWMx == PWM2) { funcA = FUNMUX_PWM2A_OUT; funcB = FUNMUX_PWM2B_OUT; }
         else if (pwm->PWMx == PWM3) { funcA = FUNMUX_PWM3A_OUT; funcB = FUNMUX_PWM3B_OUT; }
 
-        PORT_Init(SWM181_PIN_GET_PORT_PTR(pwm->ch1_pin), SWM181_PIN_GET_PIN_IDX(pwm->ch1_pin), funcA, 0);
-        PORT_Init(SWM181_PIN_GET_PORT_PTR(pwm->ch2_pin), SWM181_PIN_GET_PIN_IDX(pwm->ch2_pin), funcB, 0);
+        ch1_pin = rt_pin_get(pwm->ch1_pin_name);
+        ch2_pin = rt_pin_get(pwm->ch2_pin_name);
+        if (ch1_pin < 0 || ch2_pin < 0)
+        {
+            rt_kprintf("pwm pin lookup failed: %s ch1=%s ch2=%s\n", pwm->name, pwm->ch1_pin_name, pwm->ch2_pin_name);
+            continue;
+        }
+
+        PORT_Init(SWM181_PIN_GET_PORT_PTR(ch1_pin), SWM181_PIN_GET_PIN_IDX(ch1_pin), funcA, 0);
+        PORT_Init(SWM181_PIN_GET_PORT_PTR(ch2_pin), SWM181_PIN_GET_PIN_IDX(ch2_pin), funcB, 0);
 
         PWM_Init(pwm->PWMx, &init_struct);
         rt_device_pwm_register(&pwm->parent, pwm->name, &swm181_pwm_ops, pwm);

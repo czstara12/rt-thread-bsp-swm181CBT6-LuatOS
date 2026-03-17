@@ -156,11 +156,22 @@ void IRQ4_Handler(void)
 
 int rt_hw_can_init(void)
 {
+    rt_base_t rx_pin;
+    rt_base_t tx_pin;
+
     can_obj.CANx = CAN;
     can_obj.name = "can1";
 
-    PORT_Init(SWM181_PIN_GET_PORT_PTR(BSP_CAN_RX_PIN), SWM181_PIN_GET_PIN_IDX(BSP_CAN_RX_PIN), FUNMUX_CAN_RX, 1);
-    PORT_Init(SWM181_PIN_GET_PORT_PTR(BSP_CAN_TX_PIN), SWM181_PIN_GET_PIN_IDX(BSP_CAN_TX_PIN), FUNMUX_CAN_TX, 0);
+    rx_pin = rt_pin_get(BSP_CAN_RX_PIN);
+    tx_pin = rt_pin_get(BSP_CAN_TX_PIN);
+    if (rx_pin < 0 || tx_pin < 0)
+    {
+        rt_kprintf("can pin lookup failed: rx=%s tx=%s\n", BSP_CAN_RX_PIN, BSP_CAN_TX_PIN);
+        return -RT_EINVAL;
+    }
+
+    PORT_Init(SWM181_PIN_GET_PORT_PTR(rx_pin), SWM181_PIN_GET_PIN_IDX(rx_pin), FUNMUX_CAN_RX, 1);
+    PORT_Init(SWM181_PIN_GET_PORT_PTR(tx_pin), SWM181_PIN_GET_PIN_IDX(tx_pin), FUNMUX_CAN_TX, 0);
 
     return rt_hw_can_register(&can_obj.parent, can_obj.name, &swm181_can_ops, RT_NULL);
 }

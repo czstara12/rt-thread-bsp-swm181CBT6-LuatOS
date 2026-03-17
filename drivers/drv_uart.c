@@ -28,8 +28,8 @@ struct swm181_uart
     IRQn_Type irqn;
     uint32_t periph_irq;
     const char *name;
-    uint32_t rx_pin;
-    uint32_t tx_pin;
+    const char *rx_pin_name;
+    const char *tx_pin_name;
 };
 
 static struct swm181_uart_device
@@ -266,6 +266,8 @@ int rt_hw_uart_init(void)
     for (i = 0; i < sizeof(uart_obj) / sizeof(uart_obj[0]); i++)
     {
         struct swm181_uart *info = uart_obj[i].uart_info;
+        rt_base_t rx_pin;
+        rt_base_t tx_pin;
         uint32_t rx_func = 0, tx_func = 0;
 
         if (info->UARTx == UART0) { rx_func = FUNMUX_UART0_RXD; tx_func = FUNMUX_UART0_TXD; }
@@ -273,8 +275,16 @@ int rt_hw_uart_init(void)
         else if (info->UARTx == UART2) { rx_func = FUNMUX_UART2_RXD; tx_func = FUNMUX_UART2_TXD; }
         else if (info->UARTx == UART3) { rx_func = FUNMUX_UART3_RXD; tx_func = FUNMUX_UART3_TXD; }
 
-        PORT_Init(SWM181_PIN_GET_PORT_PTR(info->rx_pin), SWM181_PIN_GET_PIN_IDX(info->rx_pin), rx_func, 1);
-        PORT_Init(SWM181_PIN_GET_PORT_PTR(info->tx_pin), SWM181_PIN_GET_PIN_IDX(info->tx_pin), tx_func, 0);
+        rx_pin = rt_pin_get(info->rx_pin_name);
+        tx_pin = rt_pin_get(info->tx_pin_name);
+        if (rx_pin < 0 || tx_pin < 0)
+        {
+            rt_kprintf("uart pin lookup failed: %s rx=%s tx=%s\n", info->name, info->rx_pin_name, info->tx_pin_name);
+            continue;
+        }
+
+        PORT_Init(SWM181_PIN_GET_PORT_PTR(rx_pin), SWM181_PIN_GET_PIN_IDX(rx_pin), rx_func, 1);
+        PORT_Init(SWM181_PIN_GET_PORT_PTR(tx_pin), SWM181_PIN_GET_PIN_IDX(tx_pin), tx_func, 0);
 
         uart_obj[i].serial.ops = &swm181_uart_ops;
         uart_obj[i].serial.config = serial_cfg;

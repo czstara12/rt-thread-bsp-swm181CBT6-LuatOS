@@ -290,8 +290,8 @@
 /* UART Drivers */
 
 #define BSP_USING_UART0
-#define BSP_UART0_RX_PIN 0
-#define BSP_UART0_TX_PIN 1
+#define BSP_UART0_RX_PIN "PA0"
+#define BSP_UART0_TX_PIN "PA1"
 #define BSP_USING_RTC
 #define BSP_USING_WDT
 #define BSP_USING_ADC
