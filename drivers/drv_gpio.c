@@ -57,8 +57,9 @@ static rt_base_t swm181_pin_get(const char *name)
     if (*p == '.') p++;
     if (*p < '0' || *p > '9') return -RT_EINVAL;
 
-    idx = 0;
-    while (*p >= '0' && *p <= '9')
+    idx = (rt_uint8_t)(*p - '0');
+    p++;
+    if (*p >= '0' && *p <= '9')
     {
         idx = (rt_uint8_t)(idx * 10 + (*p - '0'));
         p++;
