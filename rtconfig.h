@@ -87,7 +87,6 @@
 #define RT_USING_I2C_BITOPS
 #define RT_USING_ADC
 #define RT_USING_PWM
-#define RT_USING_RTC
 #define RT_USING_SPI
 #define RT_USING_WDT
 #define RT_USING_PIN
@@ -292,9 +291,6 @@
 #define BSP_USING_UART0
 #define BSP_UART0_RX_PIN "PA0"
 #define BSP_UART0_TX_PIN "PA1"
-#define BSP_USING_RTC
-#define BSP_USING_WDT
-#define BSP_USING_ADC
 
 /* I2C Drivers */
 

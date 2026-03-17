@@ -61,11 +61,6 @@ menu "Hardware Drivers Config"
             endif
         endmenu
 
-        config BSP_USING_RTC
-            bool "Enable RTC (Software)"
-            select RT_USING_RTC
-            default n
-
         config BSP_USING_WDT
             bool "Enable Watch Dog"
             select RT_USING_WDT
