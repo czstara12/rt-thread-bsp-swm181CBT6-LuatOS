@@ -290,31 +290,20 @@
 /* UART Drivers */
 
 #define BSP_USING_UART0
-#define BSP_UART0_RX_PIN 30
-#define BSP_UART0_TX_PIN 31
+#define BSP_UART0_RX_PIN 0
+#define BSP_UART0_TX_PIN 1
 #define BSP_USING_RTC
 #define BSP_USING_WDT
 #define BSP_USING_ADC
-#define BSP_USING_CAN
-#define BSP_CAN_RX_PIN 13
-#define BSP_CAN_TX_PIN 12
 
 /* I2C Drivers */
 
-#define BSP_USING_I2C0
-#define BSP_I2C0_SCL_PIN 13
-#define BSP_I2C0_SDA_PIN 12
 
 /* PWM Drivers */
 
-#define BSP_USING_PWM0
-#define BSP_PWM0_CH1_PIN 21
-#define BSP_PWM0_CH2_PIN 22
 
 /* SPI Drivers */
 
-#define BSP_USING_SPI0
-#define BSP_SPI0_PIN_GRP_A
 
 /* Onboard Peripheral Drivers */
 

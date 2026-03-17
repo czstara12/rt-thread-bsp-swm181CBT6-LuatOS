@@ -39,6 +39,37 @@ struct swm181_pin_irq
 static struct swm181_pin_irq pin_irq_table[80];
 static rt_uint8_t port_irq_refcnt[5];
 
+static rt_base_t swm181_pin_get(const char *name)
+{
+    rt_uint8_t port;
+    rt_uint8_t idx;
+    const char *p = name;
+
+    if (p == RT_NULL) return -RT_EINVAL;
+    if (*p == 'P' || *p == 'p') p++;
+    else return -RT_EINVAL;
+
+    if (*p >= 'a' && *p <= 'z') port = *p - 'a';
+    else if (*p >= 'A' && *p <= 'Z') port = *p - 'A';
+    else return -RT_EINVAL;
+    p++;
+
+    if (*p == '.') p++;
+    if (*p < '0' || *p > '9') return -RT_EINVAL;
+
+    idx = 0;
+    while (*p >= '0' && *p <= '9')
+    {
+        idx = (rt_uint8_t)(idx * 10 + (*p - '0'));
+        p++;
+    }
+
+    if (*p != '\0') return -RT_EINVAL;
+    if (port > SWM181_PORT_E || idx > 15) return -RT_EINVAL;
+
+    return SWM181_PIN(port, idx);
+}
+
 rt_int32_t swm181_board_pin_to_mcu_pin(uint32_t board_pin)
 {
     if (board_pin < 1 || board_pin > 53) return -1;
@@ -114,11 +145,11 @@ static void swm181_pin_write(struct rt_device *device, rt_base_t pin, rt_uint8_t
     else GPIO_AtomicClrBit(gpio_port, SWM181_PIN_IDX(pin));
 }
 
-static int swm181_pin_read(struct rt_device *device, rt_base_t pin)
+static rt_ssize_t swm181_pin_read(struct rt_device *device, rt_base_t pin)
 {
     if (SWM181_PIN_PORT(pin) > SWM181_PORT_E) return 0;
     GPIO_TypeDef *gpio_port = (GPIO_TypeDef *)(GPIOA_BASE + SWM181_PIN_PORT(pin) * 0x1000);
-    return (int)GPIO_GetBit(gpio_port, SWM181_PIN_IDX(pin));
+    return (rt_ssize_t)GPIO_GetBit(gpio_port, SWM181_PIN_IDX(pin));
 }
 
 static rt_err_t swm181_pin_attach_irq(struct rt_device *device, rt_base_t pin,
@@ -170,7 +201,7 @@ static rt_err_t swm181_pin_irq_enable(struct rt_device *device, rt_base_t pin, r
 }
 
 const static struct rt_pin_ops swm181_pin_ops = {
-    swm181_pin_mode, swm181_pin_write, swm181_pin_read, swm181_pin_attach_irq, swm181_pin_detach_irq, swm181_pin_irq_enable
+    swm181_pin_mode, swm181_pin_write, swm181_pin_read, swm181_pin_attach_irq, swm181_pin_detach_irq, swm181_pin_irq_enable, swm181_pin_get
 };
 
 int rt_hw_pin_init(void)

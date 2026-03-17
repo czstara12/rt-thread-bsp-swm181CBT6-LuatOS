@@ -3,11 +3,6 @@
 #include "board.h"
 #include "drv_gpio.h"
 
-/* 定义测试引脚 (统一使用 MCU Pin Index 编码) */
-#define LED0_PIN GET_PIN(B, 8)
-#define LED1_PIN GET_PIN(B, 9)
-#define LED2_PIN GET_PIN(D, 0)
-
 /* 外设设备名称 */
 #define ADC_DEV_NAME        "adc0"
 #define PWM_DEV_NAME        "pwm0"
@@ -20,14 +15,26 @@
 int main(void)
 {
     rt_uint32_t val;
+    rt_base_t led0_pin;
+    rt_base_t led1_pin;
+    rt_base_t led2_pin;
     rt_device_t dev;
 
-    rt_pin_mode(LED0_PIN, PIN_MODE_OUTPUT);
-    rt_pin_mode(LED1_PIN, PIN_MODE_OUTPUT);
-    rt_pin_mode(LED2_PIN, PIN_MODE_OUTPUT);
-    rt_pin_write(LED0_PIN, PIN_LOW);
-    rt_pin_write(LED1_PIN, PIN_LOW);
-    rt_pin_write(LED2_PIN, PIN_LOW);
+    led0_pin = rt_pin_get("PB8");
+    led1_pin = rt_pin_get("PB9");
+    led2_pin = rt_pin_get("PD0");
+    if (led0_pin < 0 || led1_pin < 0 || led2_pin < 0)
+    {
+        rt_kprintf("Pin lookup failed\n");
+        return -RT_ERROR;
+    }
+
+    rt_pin_mode(led0_pin, PIN_MODE_OUTPUT);
+    rt_pin_mode(led1_pin, PIN_MODE_OUTPUT);
+    rt_pin_mode(led2_pin, PIN_MODE_OUTPUT);
+    rt_pin_write(led0_pin, PIN_LOW);
+    rt_pin_write(led1_pin, PIN_LOW);
+    rt_pin_write(led2_pin, PIN_LOW);
     rt_kprintf("SWM181 BSP Driver Test Start...\n");
 
     /* 1. UART 测试 (UART1) */
@@ -79,17 +86,17 @@ int main(void)
 
     while (1)
     {
-        rt_pin_write(LED0_PIN, PIN_HIGH);
+        rt_pin_write(led0_pin, PIN_HIGH);
         rt_thread_mdelay(500);
-        rt_pin_write(LED1_PIN, PIN_HIGH);
+        rt_pin_write(led1_pin, PIN_HIGH);
         rt_thread_mdelay(500);
-        rt_pin_write(LED2_PIN, PIN_HIGH);
+        rt_pin_write(led2_pin, PIN_HIGH);
         rt_thread_mdelay(500);
-        rt_pin_write(LED0_PIN, PIN_LOW);
+        rt_pin_write(led0_pin, PIN_LOW);
         rt_thread_mdelay(500);
-        rt_pin_write(LED1_PIN, PIN_LOW);
+        rt_pin_write(led1_pin, PIN_LOW);
         rt_thread_mdelay(500);
-        rt_pin_write(LED2_PIN, PIN_LOW);
+        rt_pin_write(led2_pin, PIN_LOW);
         rt_thread_mdelay(500);
     }
 }

@@ -30,6 +30,7 @@
 #define __SWM181_PORT_D              SWM181_PORT_D
 #define __SWM181_PORT_E              SWM181_PORT_E
 
+/* BSP fast path: encode pin directly. Application code should prefer rt_pin_get("PXn"). */
 #define GET_PIN(PORTx, PIN)          SWM181_PIN(__SWM181_PORT_##PORTx, PIN)
 
 /* All BSP pin interfaces use the encoded MCU pin. */
